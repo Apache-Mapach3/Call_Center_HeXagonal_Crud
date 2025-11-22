@@ -4,40 +4,47 @@
  */
 package com.udc.callcenterdesktop.dominio.modelo;
 
-
-
-
 import java.time.LocalDate;
-import java.util.Objects;
-/**
- *
- * @author Admin
- */
+
 public class Campania {
-    private int id;
-    private String nombre;
-    private String descripcion;
+
+    
+    // 1. ATRIBUTOS (Nombres que usa el Adaptador)
+
+    private int id; // Corresponde a id_campania
+    private String nombre; // Corresponde a nombre_campania
+    private String tipoCampania;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+    private String supervisoresCargo;
+    private String descripcionObjetivos;
     private String estado; 
+
     
-    public Campania(){
-        
+    // 2. CONSTRUCTORES
+   
+    public Campania() {
+        // Constructor vacío (necesario para mapeo JDBC)
     }
-    
-    public Campania(int id, String nombre, String descripcion, LocalDate fechaInicio, LocalDate fechaFin, String estado) {
+
+    // Constructor completo (ajusta a 8 parámetros, ID como int)
+    public Campania(int id, String nombre, String tipoCampania, LocalDate fechaInicio, LocalDate fechaFin, String supervisoresCargo, String descripcionObjetivos, String estado) {
         this.id = id;
         this.nombre = nombre;
-        this.descripcion = descripcion;
+        this.tipoCampania = tipoCampania;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
+        this.supervisoresCargo = supervisoresCargo;
+        this.descripcionObjetivos = descripcionObjetivos;
         this.estado = estado;
     }
-    
+
+   
+    // 3. GETTERS Y SETTERS (Resuelve los errores 'cannot find symbol method...')
+
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
@@ -45,23 +52,20 @@ public class Campania {
     public String getNombre() {
         return nombre;
     }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getTipoCampania() {
+        return tipoCampania;
     }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setTipoCampania(String tipoCampania) {
+        this.tipoCampania = tipoCampania;
     }
 
     public LocalDate getFechaInicio() {
         return fechaInicio;
     }
-
     public void setFechaInicio(LocalDate fechaInicio) {
         this.fechaInicio = fechaInicio;
     }
@@ -69,85 +73,28 @@ public class Campania {
     public LocalDate getFechaFin() {
         return fechaFin;
     }
-
     public void setFechaFin(LocalDate fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    public String getSupervisoresCargo() {
+        return supervisoresCargo;
+    }
+    public void setSupervisoresCargo(String supervisoresCargo) {
+        this.supervisoresCargo = supervisoresCargo;
+    }
+
+    public String getDescripcionObjetivos() {
+        return descripcionObjetivos;
+    }
+    public void setDescripcionObjetivos(String descripcionObjetivos) {
+        this.descripcionObjetivos = descripcionObjetivos;
     }
 
     public String getEstado() {
         return estado;
     }
-
     public void setEstado(String estado) {
         this.estado = estado;
     }
-    
-    
-    
-    
-public String toString() {
-        return "Campania{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", fechaInicio=" + fechaInicio +
-                ", fechaFin=" + fechaFin +
-                ", estado='" + estado + '\'' +
-                '}';
-    }
-    
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Campania campania = (Campania) o;
-        return id == campania.id;
-    }
-    
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    public Object getTipoCampania() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public Object getSupervisoresCargo() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public Object getDescripcionObjetivos() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setTipoCampania(String text) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setSupervisoresCargo(String text) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setDescripcionObjetivos(String text) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }
-
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-

@@ -9,73 +9,59 @@ package com.udc.callcenterdesktop.infraestructura.salida.persistencia;
  */
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
+// Importamos nuestra Excepción Personalizada
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
- * Adaptador de Persistencia para MySQL.
- * Implementa el Puerto de Salida (IAgenteRepository) definido en el Dominio.
- * Utiliza JDBC puro para realizar operaciones CRUD sobre la tabla 'agentes'.
+ * Adaptador MySQL.
+ * YA NO muestra mensajes visuales (JOptionPane).
+ * Si algo falla, lanza una CallCenterException para que la Vista decida qué hacer.
  */
 public class AgenteMySqlAdapter implements IAgenteRepository {
 
-    // Consultas SQL predefinidas para evitar errores de sintaxis y facilitar el mantenimiento
     private static final String INSERT_SQL = "INSERT INTO agentes (nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String SELECT_ALL_SQL = "SELECT * FROM agentes";
     private static final String UPDATE_SQL = "UPDATE agentes SET nombre_completo=?, numero_empleado=?, telefono_contacto=?, email=?, horario_turno=?, nivel_experiencia=? WHERE id_agente=?";
     private static final String DELETE_SQL = "DELETE FROM agentes WHERE id_agente=?";
 
-    /**
-     * Guarda un nuevo registro de Agente en la base de datos.
-     * @param agente Objeto con la informacion a persistir.
-     */
     @Override
     public void guardar(Agente agente) {
-        // Se utiliza try-with-resources para asegurar que la conexion y el statement 
-        // se cierren automaticamente, evitando fugas de memoria.
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
             
             configurarStatement(stmt, agente);
             stmt.executeUpdate();
             
-            JOptionPane.showMessageDialog(null, "Agente registrado exitosamente.");
+           
             
         } catch (SQLException e) {
-            mostrarError("Error al guardar en base de datos", e);
+            // Envolvemos el error técnico en uno de negocio
+            throw new CallCenterException("No se pudo guardar el agente en la base de datos.", e);
         }
     }
 
-    /**
-     * Actualiza los datos de un Agente existente.
-     * @param agente Objeto con la informacion modificada. Debe contener un ID valido.
-     */
     @Override
     public void actualizar(Agente agente) {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_SQL)) {
             
             configurarStatement(stmt, agente);
-            // El ID es el septimo parametro en la consulta UPDATE (WHERE id_agente = ?)
             stmt.setLong(7, agente.getIdAgente());
-            
             stmt.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Agente actualizado correctamente.");
             
         } catch (SQLException e) {
-            mostrarError("Error al actualizar el registro", e);
+            // Lanzamos la excepción hacia arriba
+            throw new CallCenterException("Error crítico al intentar actualizar el agente.", e);
         }
     }
 
-    /**
-     * Elimina un Agente de la base de datos por su identificador.
-     * @param id Identificador unico del agente a eliminar.
-     */
     @Override
     public void eliminar(Long id) {
         try (Connection conn = ConexionDB.obtenerConexion();
@@ -83,26 +69,20 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             
             stmt.setLong(1, id);
             stmt.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Agente eliminado del sistema.");
             
         } catch (SQLException e) {
-            mostrarError("Error al eliminar el registro", e);
+            // Lanzamos la excepción hacia arriba
+            throw new CallCenterException("No se pudo eliminar el agente. Verifique si tiene registros asociados.", e);
         }
     }
 
-    /**
-     * Recupera todos los agentes almacenados en la base de datos.
-     * @return Una lista de objetos Agente. Si no hay registros, retorna una lista vacia.
-     */
     @Override
     public List<Agente> listarTodos() {
         List<Agente> lista = new ArrayList<>();
-        
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = stmt.executeQuery()) {
             
-            // Iteramos sobre el conjunto de resultados (filas de la tabla)
             while (rs.next()) {
                 Agente a = new Agente(
                     rs.getLong("id_agente"),
@@ -115,21 +95,15 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
                 );
                 lista.add(a);
             }
+            return lista;
             
         } catch (SQLException e) {
-            mostrarError("Error al listar los agentes", e);
+            // Lanzamos la excepción hacia arriba
+            throw new CallCenterException("Error al intentar leer la lista de agentes.", e);
         }
-        return lista;
     }
 
-    
-    // METODOS PRIVADOS AUXILIARES 
-    
-
-    /**
-     * Asigna los valores del objeto Agente a los parametros del PreparedStatement.
-     * Se usa tanto en guardar como en actualizar para evitar duplicidad de codigo.
-     */
+    // Método auxiliar privado
     private void configurarStatement(PreparedStatement stmt, Agente agente) throws SQLException {
         stmt.setString(1, agente.getNombreCompleto());
         stmt.setString(2, agente.getNumeroEmpleado());
@@ -137,16 +111,5 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
         stmt.setString(4, agente.getEmail());
         stmt.setString(5, agente.getHorarioTurno());
         stmt.setString(6, agente.getNivelExperiencia());
-    }
-    
-    /**
-     * Centraliza el manejo de errores SQL para mostrar mensajes consistentes.
-     */
-    private void mostrarError(String titulo, SQLException e) {
-        System.err.println(titulo + ": " + e.getMessage());
-        JOptionPane.showMessageDialog(null, 
-                titulo + ": " + e.getMessage(), 
-                "Error de Base de Datos", 
-                JOptionPane.ERROR_MESSAGE);
     }
 }

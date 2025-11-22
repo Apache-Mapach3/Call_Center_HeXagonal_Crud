@@ -4,21 +4,22 @@
  */
 package com.udc.callcenterdesktop.dominio.puertos.entrada;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 
-/**
- *
- * @author camolano
- */
 public interface ICampaniaRepository {
-    Campania crearOactualizarCampania(Campania campania);
-    Optional<Campania>obtenerCamniaPorId(int id);
-    List<Campania>obtenerTodasCampanias();
-    boolean eliminarCampania(int id);
-    List<Campania>obtenerCampaniasActivas(LocalDate fechaActual);
+
+   
+    void guardar(Campania campania);
+
     
+    List<Campania> listarTodos();
+
+    
+    void actualizar(Campania campania);
+
+    
+    void eliminar(Long id);
     
 }
+

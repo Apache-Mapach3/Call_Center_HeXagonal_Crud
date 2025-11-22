@@ -8,20 +8,22 @@ package com.udc.callcenterdesktop.aplicacion.servicios;
  *
  * @author Admin
  */
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
+import com.udc.callcenterdesktop.aplicacion.mapper.AgenteMapper;
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService;
 import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 
 /**
- * Servicio de Aplicación (Core Lógico).
- * Orquestador que recibe peticiones de la vista, aplica reglas de negocio
- * y delega la persistencia al repositorio.
+ * Servicio de Aplicación "Nivel Dios".
+ * Implementa el patrón DTO para desacoplar totalmente la Vista del Dominio.
+ * Realiza la conversión (Mapping) y aplica reglas de negocio.
  */
 public class AgenteService implements IAgenteService {
 
-    // Inyección del Repositorio (Puerto de Salida)
     private final IAgenteRepository repositorio;
 
     public AgenteService(IAgenteRepository repositorio) {
@@ -29,41 +31,53 @@ public class AgenteService implements IAgenteService {
     }
 
     @Override
-    public void registrarAgente(Agente agente) {
-        // Validaciones de Negocio (Reglas antes de guardar)
-        if (validarDatos(agente)) {
-            // Si pasa la validación, guardamos
-            repositorio.guardar(agente);
+    public void registrarAgente(AgenteDTO dto) {
+        // Convertir DTO (Datos planos) a Entidad (Objeto de Negocio)
+        Agente entidad = AgenteMapper.toEntity(dto);
+        
+        // Validar Reglas de Negocio sobre la Entidad
+        if (validarDatos(entidad)) {
+            // Guardar la Entidad
+            repositorio.guardar(entidad);
         }
     }
 
     @Override
-    public List<Agente> listarAgentes() {
-        // Simplemente delegamos la consulta al repositorio
-        return repositorio.listarTodos();
+    public List<AgenteDTO> listarAgentes() {
+        // Obtener lista de Entidades del repositorio
+        List<Agente> entidades = repositorio.listarTodos();
+        
+        // Convertir Lista de Entidades a Lista de DTOs
+        // Usamos Java Streams para hacerlo en una línea elegante
+        return entidades.stream()
+                .map(AgenteMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void actualizarAgente(Agente agente) {
-        // Validamos que el agente tenga un ID (es obligatorio para editar)
-        if (agente.getIdAgente() == null || agente.getIdAgente() <= 0) {
-            JOptionPane.showMessageDialog(null, "Error: No se puede editar un agente sin ID.");
-            return;
+    public void actualizarAgente(AgenteDTO dto) {
+        // Convertir
+        Agente entidad = AgenteMapper.toEntity(dto);
+        
+        // Validar ID
+        if (entidad.getIdAgente() == null || entidad.getIdAgente() <= 0) {
+            throw new IllegalArgumentException("No se puede editar un agente sin ID.");
         }
 
-        if (validarDatos(agente)) {
-            repositorio.actualizar(agente);
+        // Validar Datos y Actualizar
+        if (validarDatos(entidad)) {
+            repositorio.actualizar(entidad);
         }
     }
 
     @Override
     public void eliminarAgente(Long id) {
         if (id == null) {
-            JOptionPane.showMessageDialog(null, "Error: ID inválido para eliminación.");
-            return;
+            throw new IllegalArgumentException("ID inválido para eliminación.");
         }
         
-        // Confirmación de seguridad antes de borrar
+        // La confirmación visual (JOptionPane) se debería hacer en la Vista,
+        // pero si prefieres mantener la lógica aquí, está bien por ahora.
         int confirmacion = JOptionPane.showConfirmDialog(null, 
                 "¿Estás seguro de eliminar este agente?", 
                 "Confirmar Eliminación", 
@@ -75,15 +89,14 @@ public class AgenteService implements IAgenteService {
     }
     
     /**
-     * Método privado auxiliar para validar datos comunes.
-     * Evita repetir if-else en registrar y actualizar.
+     * Valida las reglas de negocio de la Entidad.
      */
     private boolean validarDatos(Agente agente) {
-        if (agente.getNombreCompleto().isEmpty()) {
+        if (agente.getNombreCompleto() == null || agente.getNombreCompleto().trim().isEmpty()) {
             JOptionPane.showMessageDialog(null, "El nombre es obligatorio.");
             return false;
         }
-        if (!agente.getEmail().contains("@")) {
+        if (agente.getEmail() == null || !agente.getEmail().contains("@")) {
             JOptionPane.showMessageDialog(null, "El correo no es válido.");
             return false;
         }

@@ -5,125 +5,125 @@
 package com.udc.callcenterdesktop.infraestructura.salida.persistencia;
 
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Optional;
-
-
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
+
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- *
- * @author camolano
+ * Adaptador de Persistencia (Capa de Infraestructura).
+ * Implementa el contrato ICampaniaRepository usando JDBC para interactuar con MySQL.
  */
-public class CampaniaMySqlAdapter extends ICampaniaRepository {
+public class CampaniaMySqlAdapter implements ICampaniaRepository {
+
+
     private static final String SQL_INSERT = 
-        "INSERT INTO campanias (nombre, descripcion, fechaInicio, fechaFin, estado) VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO campanias (nombre_campania, tipo_campania, fecha_inicio, fecha_fin, supervisores_cargo, descripcion_objetivos) VALUES (?, ?, ?, ?, ?, ?)";
     
     private static final String SQL_UPDATE = 
-        "UPDATE campanias SET nombre=?, descripcion=?, fechaInicio=?, fechaFin=?, estado=? WHERE id=?";
+        "UPDATE campanias SET nombre_campania=?, tipo_campania=?, fecha_inicio=?, fecha_fin=?, supervisores_cargo=?, descripcion_objetivos=? WHERE id_campania=?";
     
     private static final String SQL_SELECT_ALL = 
-        "SELECT id, nombre, descripcion, fechaInicio, fechaFin, estado FROM campanias";
+        "SELECT id_campania, nombre_campania, tipo_campania, fecha_inicio, fecha_fin, supervisores_cargo, descripcion_objetivos FROM campanias";
     
     private static final String SQL_SELECT_BY_ID = 
-        "SELECT id, nombre, descripcion, fechaInicio, fechaFin, estado FROM campanias WHERE id = ?";
-    
-    private static final String SQL_DELETE_BY_ID = 
-        "DELETE FROM campanias WHERE id = ?";
-
-
-private Campania mapearCampania(ResultSet rs) throws SQLException {
-        Campania campania = new Campania();
-        campania.setId(rs.getInt("id"));
-        campania.setNombre(rs.getString("nombre"));
-        campania.setDescripcion(rs.getString("descripcion"));
+        "SELECT id_campania, nombre_campania, tipo_campania, fecha_inicio, fecha_fin, supervisores_cargo, descripcion_objetivos FROM campanias WHERE id_campania=?";
         
-        campania.setFechaInicio(rs.getDate("fechaInicio").toLocalDate()); 
-        campania.setFechaFin(rs.getDate("fechaFin").toLocalDate());
-        campania.setEstado(rs.getString("estado"));
+    private static final String SQL_DELETE = 
+        "DELETE FROM campanias WHERE id_campania=?";
+
+    // ------------------------------------------
+    // 2. IMPLEMENTACIÓN: Mapeo de ResultSet a Entidad
+    // ------------------------------------------
+    
+    /**
+     * Helper para mapear una fila de ResultSet a un objeto Campania.
+     * @param rs El ResultSet actual.
+     * @return Objeto Campania mapeado.
+     * @throws SQLException Si ocurre un error de JDBC.
+     */
+    private Campania mapearCampania(ResultSet rs) throws SQLException {
+        Campania campania = new Campania();
+        campania.setId(rs.getInt("id_campania"));
+        campania.setNombre(rs.getString("nombre_campania"));
+        campania.setTipoCampania(rs.getString("tipo_campania"));
+        
+        // Mapeo de fechas (DATE a LocalDate)
+        Date fechaInicioSql = rs.getDate("fecha_inicio");
+        campania.setFechaInicio(fechaInicioSql != null ? fechaInicioSql.toLocalDate() : null);
+        
+        Date fechaFinSql = rs.getDate("fecha_fin");
+        campania.setFechaFin(fechaFinSql != null ? fechaFinSql.toLocalDate() : null);
+        
+        campania.setSupervisoresCargo(rs.getString("supervisores_cargo"));
+        campania.setDescripcionObjetivos(rs.getString("descripcion_objetivos"));
+        // Nota: Se asume que el estado es manejado por lógica o por defecto 'ACTIVA'
+        campania.setEstado("ACTIVA"); 
+        
         return campania;
     }
 
-public Campania guardar(Campania campania) {
-       
-        if (campania.getId() == 0) {
-            return insertar(campania);
-        } else {
-            return actualizar(campania);
-        }
-    }
-
-
-private Campania insertar(Campania campania) {
-
-try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
-
-
-
-stmt.setString(1, campania.getNombre());
-            stmt.setString(2, campania.getDescripcion());
-
-stmt.setDate(3, Date.valueOf(campania.getFechaInicio())); 
-            stmt.setDate(4, Date.valueOf(campania.getFechaFin()));
-            stmt.setString(5, campania.getEstado());
-
-
-int affectedRows = stmt.executeUpdate();
-            
-            if (affectedRows == 0) {
-                throw new SQLException("Fallo al insertar campaña, no se afectaron filas.");
-            }
-
-try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    campania.setId(generatedKeys.getInt(1));
-
-
-}
-            }
-            return campania;
-
-
-
-
-} catch (SQLException e) {
-
-
-
-throw new RuntimeException("Error al crear campaña en BD.", e);
-        }
-    }
-
-private Campania actualizar(Campania campania) {
+    
+    
+    public Campania guardar(Campania campania) {
+        // Decide si es INSERT o UPDATE basado en si el ID existe (ID > 0)
+        boolean isUpdate = campania.getId() > 0;
+        String sql = isUpdate ? SQL_UPDATE : SQL_INSERT;
+        
         try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
+             // RETURN_GENERATED_KEYS es necesario para obtener el ID si es un INSERT
+             PreparedStatement stmt = conn.prepareStatement(sql, isUpdate ? Statement.NO_GENERATED_KEYS : Statement.RETURN_GENERATED_KEYS)) {
 
-stmt.setString(1, campania.getNombre());
-            stmt.setString(2, campania.getDescripcion());
+            // Mapeo de parámetros del objeto Campania al PreparedStatement
+            stmt.setString(1, campania.getNombre());
+            stmt.setString(2, campania.getTipoCampania());
             stmt.setDate(3, Date.valueOf(campania.getFechaInicio()));
-            stmt.setDate(4, Date.valueOf(campania.getFechaFin()));
-            stmt.setString(5, campania.getEstado());
-            stmt.setInt(6, campania.getId());
-
-
-
-stmt.executeUpdate();
             
+            // Las fechas fin pueden ser NULL, se maneja la conversión de LocalDate a SQL Date
+            LocalDate fechaFin = campania.getFechaFin();
+            if (fechaFin != null) {
+                stmt.setDate(4, Date.valueOf(fechaFin));
+            } else {
+                stmt.setNull(4, java.sql.Types.DATE);
+            }
+            
+            stmt.setString(5, campania.getSupervisoresCargo());
+            stmt.setString(6, campania.getDescripcionObjetivos());
+
+            if (isUpdate) {
+                // Si es UPDATE, el ID va al final (posición 7)
+                stmt.setInt(7, campania.getId());
+            }
+
+            stmt.executeUpdate();
+
+            // Si es INSERT, recuperamos el ID generado
+            if (!isUpdate) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        campania.setId(rs.getInt(1));
+                    }
+                }
+            }
             return campania;
 
-
-
-} catch (SQLException e) {
-            System.err.println("Error de persistencia al actualizar la campaña: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Error al actualizar campaña en BD.", e);
+        } catch (SQLException e) {
+            // Se lanza una excepción de tiempo de ejecución para ser manejada en capas superiores
+            throw new RuntimeException("Error al guardar/actualizar la campaña en la base de datos.", e);
         }
     }
 
+   
     public Optional<Campania> buscarPorId(int id) {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_BY_ID)) {
@@ -132,94 +132,74 @@ stmt.executeUpdate();
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Si encuentra un registro, lo mapea y envuelve en Optional
+                    // Si encuentra el registro, mapea y devuelve un Optional con la Campania
                     return Optional.of(mapearCampania(rs));
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error de persistencia al buscar por ID: " + e.getMessage());
-            e.printStackTrace();
+            // Si no encuentra nada, devuelve un Optional vacío
+            return Optional.empty();
 
-}
-        return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar campaña por ID.", e);
+        }
     }
+
 
     public List<Campania> buscarTodas() {
         List<Campania> campanias = new ArrayList<>();
+        
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) {
-            
+             ResultSet rs = stmt.executeQuery()) { // El ResultSet se cierra con el Statement y Connection gracias al try-with-resources
+
             while (rs.next()) {
+                // Itera sobre todos los resultados y mapea cada fila
                 campanias.add(mapearCampania(rs));
             }
+            return campanias;
+
         } catch (SQLException e) {
-            System.err.println("Error de persistencia al buscar todas: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Error al obtener listado de campañas.", e);
+            throw new RuntimeException("Error al buscar todas las campañas.", e);
         }
-        return campanias;
     }
 
+   
     public boolean eliminarPorId(int id) {
         try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE_BY_ID)) {
-            
-            stmt.setInt(1, id);
-            int filasAfectadas = stmt.executeUpdate();
+             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
 
-return filasAfectadas > 0; 
+            stmt.setInt(1, id);
+            
+            // executeUpdate devuelve el número de filas afectadas
+            int filasAfectadas = stmt.executeUpdate(); 
+            
+            // Retorna true si al menos una fila fue eliminada
+            return filasAfectadas > 0; 
+
         } catch (SQLException e) {
-            System.err.println("Error de persistencia al eliminar: " + e.getMessage());
-            e.printStackTrace();
-            return false; 
+            throw new RuntimeException("Error al eliminar la campaña.", e);
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
