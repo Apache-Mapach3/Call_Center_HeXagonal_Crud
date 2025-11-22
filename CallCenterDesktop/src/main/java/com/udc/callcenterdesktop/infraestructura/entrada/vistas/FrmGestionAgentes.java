@@ -8,8 +8,9 @@ package com.udc.callcenterdesktop.infraestructura.entrada.vistas;
  *
  * @author Admin
  */
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO; 
 import com.udc.callcenterdesktop.aplicacion.servicios.AgenteService;
-import com.udc.callcenterdesktop.dominio.modelo.Agente;
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -32,25 +33,17 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Ventana de Gestión de Agentes.
- * Incluye Formulario (Arriba) y Tabla de Datos (Abajo).
- */
 public class FrmGestionAgentes extends JFrame {
 
     private AgenteService agenteService;
     
-    // Componentes del Formulario
-    private JTextField txtIdOculto; // Para saber a quién editar
+    // Componentes
+    private JTextField txtIdOculto;
     private JTextField txtNombre, txtNumeroEmpleado, txtTelefono, txtEmail;
     private JComboBox<String> cbHorario, cbExperiencia;
-    
-    // Botones
     private JButton btnGuardar, btnEliminar, btnLimpiar;
-    
-    // Componentes de la Tabla
     private JTable tablaAgentes;
-    private DefaultTableModel modeloTabla; // Es el "excel" detrás de la tabla
+    private DefaultTableModel modeloTabla;
 
     public FrmGestionAgentes() {
         initUI();
@@ -59,12 +52,12 @@ public class FrmGestionAgentes extends JFrame {
     public FrmGestionAgentes(AgenteService service) {
         this.agenteService = service;
         initUI();
-        cargarTabla(); // Cargar datos al abrir la ventana
+        cargarTabla();
     }
 
     private void initUI() {
-        setTitle("Gestión de Agentes - CRUD Completo");
-        setSize(800, 600); // Más grande para que quepa la tabla
+        setTitle("Gestión de Agentes - Arquitectura Hexagonal + DTOs");
+        setSize(850, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -72,19 +65,17 @@ public class FrmGestionAgentes extends JFrame {
         // TITULO
         JPanel panelTitulo = new JPanel();
         panelTitulo.setBackground(new Color(0, 102, 204));
-        JLabel lblTitulo = new JLabel("Administración de Agentes");
+        JLabel lblTitulo = new JLabel("Administración de Agentes (Modo Dios)");
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         panelTitulo.add(lblTitulo);
 
-        // FORMULARIO (Panel Norte - Centro)
+        // FORMULARIO
         JPanel panelSuperior = new JPanel(new BorderLayout());
-        JPanel panelForm = new JPanel(new GridLayout(3, 4, 10, 10)); // 3 filas, 4 columnas
+        JPanel panelForm = new JPanel(new GridLayout(3, 4, 10, 10));
         panelForm.setBorder(BorderFactory.createTitledBorder("Datos del Agente"));
 
-        txtIdOculto = new JTextField(); 
-        txtIdOculto.setVisible(false); // No se ve, pero guarda el ID
-
+        txtIdOculto = new JTextField(); txtIdOculto.setVisible(false);
         txtNombre = new JTextField();
         txtNumeroEmpleado = new JTextField();
         txtTelefono = new JTextField();
@@ -99,7 +90,7 @@ public class FrmGestionAgentes extends JFrame {
         panelForm.add(crearLabel("Turno:")); panelForm.add(cbHorario);
         panelForm.add(crearLabel("Experiencia:")); panelForm.add(cbExperiencia);
 
-        // BOTONES (Debajo del formulario)
+        // BOTONES
         JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.CENTER));
         btnGuardar = new JButton("GUARDAR / ACTUALIZAR");
         btnEliminar = new JButton("ELIMINAR");
@@ -108,7 +99,6 @@ public class FrmGestionAgentes extends JFrame {
         btnGuardar.setBackground(new Color(40, 167, 69)); btnGuardar.setForeground(Color.WHITE);
         btnEliminar.setBackground(new Color(220, 53, 69)); btnEliminar.setForeground(Color.WHITE);
         
-        // Eventos de Botones
         btnGuardar.addActionListener((ActionEvent e) -> guardar());
         btnEliminar.addActionListener((ActionEvent e) -> eliminar());
         btnLimpiar.addActionListener((ActionEvent e) -> limpiar());
@@ -120,33 +110,22 @@ public class FrmGestionAgentes extends JFrame {
         panelSuperior.add(panelForm, BorderLayout.CENTER);
         panelSuperior.add(panelBtn, BorderLayout.SOUTH);
 
-        // TABLA (Panel Central - Abajo)
-        // Definimos las columnas
+        // TABLA
         String[] columnas = {"ID", "Nombre", "Empleado #", "Teléfono", "Email", "Turno", "Nivel"};
         modeloTabla = new DefaultTableModel(null, columnas) {
-            @Override // Hacemos que no se pueda editar directo en la celda
-            public boolean isCellEditable(int row, int column) { return false; }
+            @Override public boolean isCellEditable(int row, int column) { return false; }
         };
-        
         tablaAgentes = new JTable(modeloTabla);
-        JScrollPane scrollTabla = new JScrollPane(tablaAgentes); // Barra de scroll
-        scrollTabla.setBorder(BorderFactory.createTitledBorder("Listado de Agentes (Clic para editar)"));
+        JScrollPane scrollTabla = new JScrollPane(tablaAgentes);
+        scrollTabla.setBorder(BorderFactory.createTitledBorder("Listado de Agentes"));
 
-        // Evento al hacer clic en una fila (Para Editar)
         tablaAgentes.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                seleccionarFila();
-            }
+            @Override public void mouseClicked(MouseEvent e) { seleccionarFila(); }
         });
 
-        // AGREGAR TODO AL FRAME
         add(panelTitulo, BorderLayout.NORTH);
-        add(panelSuperior, BorderLayout.CENTER); // Formulario al centro arriba
-        add(scrollTabla, BorderLayout.SOUTH);    // Tabla abajo
-        
-        // Ajustar tamaño del panel sur para que la tabla se vea bien
-        scrollTabla.setPreferredSize(new java.awt.Dimension(800, 250));
+        add(panelSuperior, BorderLayout.CENTER);
+        add(scrollTabla, BorderLayout.SOUTH);
     }
 
     private JLabel crearLabel(String t) {
@@ -156,61 +135,61 @@ public class FrmGestionAgentes extends JFrame {
         return l;
     }
 
-    // LÓGICA DEL NEGOCIO
+    // LÓGICA ACTUALIZADA CON DTOs 
 
     private void cargarTabla() {
         if (agenteService == null) return;
-        
-        // 1. Limpiar tabla actual
         modeloTabla.setRowCount(0);
         
-        // 2. Pedir lista al servicio
-        List<Agente> lista = agenteService.listarAgentes();
+        // AHORA RECIBIMOS DTOs, NO ENTIDADES
+        List<AgenteDTO> lista = agenteService.listarAgentes();
         
-        // 3. Llenar tabla
-        for (Agente a : lista) {
+        for (AgenteDTO dto : lista) {
             modeloTabla.addRow(new Object[]{
-                a.getIdAgente(),
-                a.getNombreCompleto(),
-                a.getNumeroEmpleado(),
-                a.getTelefonoContacto(),
-                a.getEmail(),
-                a.getHorarioTurno(),
-                a.getNivelExperiencia()
+                dto.id,       // Acceso directo a los campos públicos del DTO
+                dto.nombre,
+                dto.numeroEmpleado,
+                dto.telefono,
+                dto.email,
+                dto.turno,
+                dto.experiencia
             });
         }
     }
 
     private void guardar() {
         try {
-            Agente a = new Agente();
-            a.setNombreCompleto(txtNombre.getText());
-            a.setNumeroEmpleado(txtNumeroEmpleado.getText());
-            a.setTelefonoContacto(txtTelefono.getText());
-            a.setEmail(txtEmail.getText());
-            a.setHorarioTurno((String)cbHorario.getSelectedItem());
-            a.setNivelExperiencia((String)cbExperiencia.getSelectedItem());
+            // CREAMOS UN DTO, NO UNA ENTIDAD
+            AgenteDTO dto = new AgenteDTO();
+            dto.nombre = txtNombre.getText();
+            dto.numeroEmpleado = txtNumeroEmpleado.getText();
+            dto.telefono = txtTelefono.getText();
+            dto.email = txtEmail.getText();
+            dto.turno = (String)cbHorario.getSelectedItem();
+            dto.experiencia = (String)cbExperiencia.getSelectedItem();
 
-            // Verificamos si es NUEVO o EDICIÓN
             if (txtIdOculto.getText().isEmpty()) {
-                // Es nuevo
-                agenteService.registrarAgente(a);
+                agenteService.registrarAgente(dto);
             } else {
-                // Es edición (ponemos el ID)
-                a.setIdAgente(Long.parseLong(txtIdOculto.getText()));
-                agenteService.actualizarAgente(a);
+                dto.id = Long.parseLong(txtIdOculto.getText());
+                agenteService.actualizarAgente(dto);
             }
             
+            JOptionPane.showMessageDialog(this, "✅ Operación exitosa.");
             limpiar();
-            cargarTabla(); // Refrescar la tabla
+            cargarTabla();
+            
+        } catch (CallCenterException ex) {
+            // Capturamos nuestra excepción personalizada
+            JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error de Negocio", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error inesperado: " + ex.getMessage());
         }
     }
 
     private void eliminar() {
         if (txtIdOculto.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Selecciona un agente de la tabla primero.");
+            JOptionPane.showMessageDialog(this, "Selecciona un agente primero.");
             return;
         }
         try {
@@ -218,15 +197,16 @@ public class FrmGestionAgentes extends JFrame {
             agenteService.eliminarAgente(id);
             limpiar();
             cargarTabla();
+        } catch (CallCenterException ex) {
+            JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
     private void seleccionarFila() {
         int fila = tablaAgentes.getSelectedRow();
         if (fila >= 0) {
-            // Pasar datos de la tabla a las cajas de texto
             txtIdOculto.setText(modeloTabla.getValueAt(fila, 0).toString());
             txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
             txtNumeroEmpleado.setText(modeloTabla.getValueAt(fila, 2).toString());

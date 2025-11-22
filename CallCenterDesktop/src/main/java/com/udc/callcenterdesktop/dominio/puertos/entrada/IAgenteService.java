@@ -8,14 +8,13 @@ package com.udc.callcenterdesktop.dominio.puertos.entrada;
  *
  * @author Admin
  */
-import com.udc.callcenterdesktop.dominio.modelo.Agente;
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO; // Importamos el DTO
 import java.util.List;
 
 public interface IAgenteService {
-    
-    // Métodos para la Vista
-    void registrarAgente(Agente agente);
-    List<Agente> listarAgentes();
-    void actualizarAgente(Agente agente);
+    // AHORA RECIBE Y DEVUELVE DTOs
+    void registrarAgente(AgenteDTO agenteDto);
+    List<AgenteDTO> listarAgentes();
+    void actualizarAgente(AgenteDTO agenteDto);
     void eliminarAgente(Long id);
 }

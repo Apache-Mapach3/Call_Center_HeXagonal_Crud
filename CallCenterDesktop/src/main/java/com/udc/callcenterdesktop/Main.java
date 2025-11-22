@@ -19,38 +19,26 @@ import com.udc.callcenterdesktop.infraestructura.salida.persistencia.AgenteMySql
  * Configura la Inyección de Dependencias manual y lanza la aplicación.
  */
 public class Main {
-
     public static void main(String[] args) {
-        
-        // Configuración visual para que se vea como el sistema operativo
         try {
+            // Poner estilo Windows
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Windows".equals(info.getName())) { // O "Nimbus"
+                if ("Windows".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (Exception ex) {
-            System.err.println("No se pudo aplicar el tema visual.");
-        }
+        } catch (Exception ex) {}
 
-      
-        // INYECCIÓN DE DEPENDENCIAS (Arquitectura Hexagonal)
-        
-        
-        // Crea la Infraestructura de Salida (Repositorio)
+        // 1. Crear Repositorio
         IAgenteRepository repositorio = new AgenteMySqlAdapter();
 
-        // Crea la Aplicación (Servicio) inyectándole el Repositorio
-        IAgenteService servicio = new AgenteService(repositorio);
+        // 2. Crear Servicio
+        AgenteService servicio = new AgenteService(repositorio);
 
-        // Iniciar la Infraestructura de Entrada (Vista GUI)
-        /* Create and display the form */
+        // 3. INYECTAR EL SERVICIO A LA VENTANA (¡ESTA ES LA CLAVE!)
         java.awt.EventQueue.invokeLater(() -> {
-            // OJO: Tu FrmGestionAgentes debe tener un constructor o método 
-            // para recibir el 'servicio' si quieres usarlo de verdad.
-            // Por ahora lo instanciamos por defecto:
-            new FrmGestionAgentes().setVisible(true);
+            new FrmGestionAgentes(servicio).setVisible(true);
         });
     }
 }
