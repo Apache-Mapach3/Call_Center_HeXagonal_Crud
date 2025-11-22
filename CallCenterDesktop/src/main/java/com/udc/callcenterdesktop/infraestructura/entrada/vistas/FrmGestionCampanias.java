@@ -4,268 +4,255 @@
  */
 package com.udc.callcenterdesktop.infraestructura.entrada.vistas;
 
-    
-    import com.udc.callcenterdesktop.dominio.modelo.Campania;
+import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
 import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService;
-import com.udc.callcenterdesktop.aplicacion.servicios.CampaniaService;
-import com.udc.callcenterdesktop.infraestructura.salida.persistencia.CampaniaMySqlAdapter;
-
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
 
-public class FrmGestionCampanias extends javax.swing.JFrame {
+public class FrmGestionCampanias extends JFrame {
 
-    // Dependencia de Servicio (Puerto de Entrada)
-    private final ICampaniaService campaniaService;
-    
-    // Componentes de la GUI
-    private DefaultTableModel tablaModelo;
+    private ICampaniaService campaniaService;
+
+    // Componentes Visuales
+    private JTextField txtIdOculto;
+    private JTextField txtNombre, txtSupervisor, txtFechaInicio, txtFechaFin, txtDescripcion;
+    private JComboBox<String> cbTipo;
+    private JButton btnGuardar, btnEliminar, btnLimpiar;
     private JTable tablaCampanias;
-    private JTextField txtId, txtNombre, txtTipo, txtFechaInicio, txtFechaFin, txtSupervisores, txtObjetivos;
-    private JButton btnGuardar, btnEliminar, btnLimpiar, btnBuscar;
+    private DefaultTableModel modeloTabla;
 
+    // Fuentes
+    private final Font fuenteLabels = new Font("Arial", Font.BOLD, 14);
+    private final Font fuenteCampos = new Font("Arial", Font.PLAIN, 14);
+
+    // Constructores
     public FrmGestionCampanias() {
-        // Inicialización de la Arquitectura (Inyección de Dependencias)
-        CampaniaMySqlAdapter repositorio = new CampaniaMySqlAdapter();
-        this.campaniaService = new CampaniaService(repositorio);
-        
-        initComponentsPersonalizados();
-        cargarDatosTabla();
-        
-        // Configuración inicial (Ej: ocultar ID para CRUD)
-        if (tablaCampanias.getColumnModel().getColumnCount() > 0) {
-            tablaCampanias.getColumnModel().getColumn(0).setMinWidth(0);
-            tablaCampanias.getColumnModel().getColumn(0).setMaxWidth(0);
-            tablaCampanias.getColumnModel().getColumn(0).setWidth(0);
-        }
+        initUI();
     }
 
-    private void initComponentsPersonalizados() {
-        setTitle("Gestión de Campañas");
+    public FrmGestionCampanias(ICampaniaService service) {
+        this.campaniaService = service;
+        initUI();
+        cargarTabla();
+    }
+
+    private void initUI() {
+        setTitle("Gestión de Campañas - Call Center");
+        setSize(950, 700);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- Panel de Datos (Norte) ---
-        JPanel pnlDatos = new JPanel(new GridLayout(4, 4, 10, 10)); // 4 filas, 4 columnas
-        pnlDatos.setBorder(BorderFactory.createTitledBorder("Detalles de la Campaña"));
+        // 1. TITULO (Encabezado Naranja/Rojo para diferenciar de Agentes)
+        JPanel panelTitulo = new JPanel();
+        panelTitulo.setBackground(new Color(255, 87, 34)); // Color Naranja Vibrante
+        panelTitulo.setPreferredSize(new Dimension(900, 60));
+        JLabel lblTitulo = new JLabel("ADMINISTRACIÓN DE CAMPAÑAS");
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        panelTitulo.add(lblTitulo);
 
-        txtId = new JTextField(5);
-        txtId.setEditable(false); // ID no editable, solo lectura
-        txtNombre = new JTextField(20);
-        txtTipo = new JTextField(20);
-        txtFechaInicio = new JTextField("AAAA-MM-DD");
-        txtFechaFin = new JTextField("AAAA-MM-DD");
-        txtSupervisores = new JTextField(20);
-        txtObjetivos = new JTextField(30);
+        // 2. FORMULARIO
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        JPanel panelForm = new JPanel(new GridLayout(3, 4, 15, 15)); 
+        panelForm.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Datos de la Campaña"),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
 
-        pnlDatos.add(new JLabel("ID:"));
-        pnlDatos.add(txtId);
-        pnlDatos.add(new JLabel("Nombre:"));
-        pnlDatos.add(txtNombre);
-        pnlDatos.add(new JLabel("Tipo:"));
-        pnlDatos.add(txtTipo);
-        pnlDatos.add(new JLabel("Fecha Inicio (AAAA-MM-DD):"));
-        pnlDatos.add(txtFechaInicio);
-        pnlDatos.add(new JLabel("Fecha Fin (AAAA-MM-DD):"));
-        pnlDatos.add(txtFechaFin);
-        pnlDatos.add(new JLabel("Supervisores:"));
-        pnlDatos.add(txtSupervisores);
-        pnlDatos.add(new JLabel("Objetivos:"));
-        pnlDatos.add(txtObjetivos);
+        txtIdOculto = new JTextField(); txtIdOculto.setVisible(false);
+
+        // Inicializar campos
+        txtNombre = crearInput();
+        txtSupervisor = crearInput();
+        txtFechaInicio = crearInput(); // Formato YYYY-MM-DD
+        txtFechaInicio.setToolTipText("Formato: YYYY-MM-DD");
+        txtFechaFin = crearInput();
+        txtDescripcion = crearInput();
         
-        // Rellenar espacios vacíos en el GridLayout
-        pnlDatos.add(new JLabel("")); 
-        pnlDatos.add(new JLabel("")); 
+        cbTipo = new JComboBox<>(new String[]{"Ventas Outbound", "Soporte Inbound", "Encuestas", "Cobranza"});
+        cbTipo.setFont(fuenteCampos);
+        cbTipo.setBackground(Color.WHITE);
 
-        // --- Panel de Botones (Sur) ---
-        JPanel pnlBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        
-        btnGuardar = new JButton("Guardar/Actualizar");
-        btnEliminar = new JButton("Eliminar");
-        btnLimpiar = new JButton("Limpiar Campos");
-        btnBuscar = new JButton("Buscar");
+        // Agregar al panel (Etiqueta -> Campo)
+        panelForm.add(crearLabel("Nombre Campaña:")); panelForm.add(txtNombre);
+        panelForm.add(crearLabel("Tipo:")); panelForm.add(cbTipo);
+        panelForm.add(crearLabel("Supervisor:")); panelForm.add(txtSupervisor);
+        panelForm.add(crearLabel("Fecha Inicio (YYYY-MM-DD):")); panelForm.add(txtFechaInicio);
+        panelForm.add(crearLabel("Fecha Fin (YYYY-MM-DD):")); panelForm.add(txtFechaFin);
+        panelForm.add(crearLabel("Descripción / Objetivo:")); panelForm.add(txtDescripcion);
 
-        pnlBotones.add(btnGuardar);
-        pnlBotones.add(btnEliminar);
-        pnlBotones.add(btnLimpiar);
-        pnlBotones.add(btnBuscar);
+        // 3. BOTONES
+        JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        btnGuardar = crearBoton("GUARDAR CAMPAÑA", new Color(40, 167, 69));
+        btnEliminar = crearBoton("ELIMINAR", new Color(220, 53, 69));
+        btnLimpiar = crearBoton("LIMPIAR", new Color(108, 117, 125));
 
-        // --- Panel de Tabla (Centro) ---
-        String[] columnas = {"ID", "Nombre", "Tipo", "Fecha Inicio", "Fecha Fin", "Supervisores", "Objetivos"};
-        tablaModelo = new DefaultTableModel(columnas, 0);
-        tablaCampanias = new JTable(tablaModelo);
-        JScrollPane scrollPanel = new JScrollPane(tablaCampanias);
-        
-        // --- Añadir Listeners (Eventos) ---
-        btnGuardar.addActionListener(e -> guardarCampania());
-        btnEliminar.addActionListener(e -> eliminarCampania());
-        btnLimpiar.addActionListener(e -> limpiarCampos());
-        tablaCampanias.getSelectionModel().addListSelectionListener(e -> mostrarSeleccionEnCampos());
-        
-        // --- Ensamblar el Frame ---
-        add(pnlDatos, BorderLayout.NORTH);
-        add(scrollPanel, BorderLayout.CENTER);
-        add(pnlBotones, BorderLayout.SOUTH);
+        btnGuardar.addActionListener((ActionEvent e) -> guardar());
+        btnEliminar.addActionListener((ActionEvent e) -> eliminar());
+        btnLimpiar.addActionListener((ActionEvent e) -> limpiar());
 
-        pack(); // Ajusta el tamaño de la ventana a los componentes
-        setLocationRelativeTo(null); // Centra la ventana
+        panelBtn.add(btnGuardar);
+        panelBtn.add(btnEliminar);
+        panelBtn.add(btnLimpiar);
+
+        panelSuperior.add(panelForm, BorderLayout.CENTER);
+        panelSuperior.add(panelBtn, BorderLayout.SOUTH);
+
+        // 4. TABLA
+        String[] columnas = {"ID", "Nombre", "Tipo", "Inicio", "Fin", "Supervisor", "Descripción"};
+        modeloTabla = new DefaultTableModel(null, columnas) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
+        tablaCampanias = new JTable(modeloTabla);
+        tablaCampanias.setRowHeight(25);
+        tablaCampanias.setFont(new Font("Arial", Font.PLAIN, 13));
+        tablaCampanias.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        tablaCampanias.getTableHeader().setBackground(new Color(240, 240, 240));
+
+        JScrollPane scrollTabla = new JScrollPane(tablaCampanias);
+        scrollTabla.setBorder(BorderFactory.createTitledBorder("Campañas Activas"));
+
+        tablaCampanias.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { seleccionarFila(); }
+        });
+
+        add(panelTitulo, BorderLayout.NORTH);
+        add(panelSuperior, BorderLayout.CENTER);
+        add(scrollTabla, BorderLayout.SOUTH);
+    }
+
+    // --- MÉTODOS DE ESTILO ---
+    private JLabel crearLabel(String texto) {
+        JLabel lbl = new JLabel(texto);
+        lbl.setFont(fuenteLabels);
+        lbl.setHorizontalAlignment(SwingConstants.RIGHT);
+        return lbl;
+    }
+
+    private JTextField crearInput() {
+        JTextField txt = new JTextField();
+        txt.setFont(fuenteCampos);
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                txt.getBorder(), 
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        return txt;
     }
     
-    // ===================================================
-    // Métodos de Lógica (Conexión al Servicio)
-    // ===================================================
+    private JButton crearBoton(String texto, Color color) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.BOLD, 12));
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setPreferredSize(new Dimension(180, 40));
+        return btn;
+    }
 
-    /**
-     * Carga los datos de todas las campañas en la JTable.
-     */
-    private void cargarDatosTabla() {
-        try {
-            List<Campania> lista = campaniaService.obtenerTodasCampanias();
-            tablaModelo.setRowCount(0); // Limpiar filas
-            
-            for (Campania c : lista) {
-                tablaModelo.addRow(new Object[]{
-                    c.getId(),
-                    c.getNombre(),
-                    c.getTipoCampania(),
-                    c.getFechaInicio(),
-                    c.getFechaFin(),
-                    c.getSupervisoresCargo(),
-                    c.getDescripcionObjetivos()
-                });
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar datos: " + e.getMessage(), "Error de BD", JOptionPane.ERROR_MESSAGE);
+    // --- LÓGICA DE NEGOCIO ---
+
+    private void cargarTabla() {
+        if (campaniaService == null) return;
+        modeloTabla.setRowCount(0);
+        List<CampaniaDTO> lista = campaniaService.listarCampanias(); // Asumiendo que el método se llama así
+        for (CampaniaDTO dto : lista) {
+            modeloTabla.addRow(new Object[]{
+                dto.idCampania, dto.nombreCampania, dto.tipoCampania, 
+                dto.fechaInicio, dto.fechaFin, dto.supervisoresCargo, dto.descripcionObjetivos
+            });
         }
     }
 
-    /**
-     * Guarda una nueva campaña o actualiza la existente.
-     */
-    private void guardarCampania() {
+    private void guardar() {
         try {
-            Campania campania = new Campania();
+            CampaniaDTO dto = new CampaniaDTO();
+            dto.nombreCampania = txtNombre.getText();
+            dto.tipoCampania = (String) cbTipo.getSelectedItem();
+            dto.supervisoresCargo = txtSupervisor.getText();
+            dto.descripcionObjetivos = txtDescripcion.getText();
             
-            // Si el campo ID no está vacío, es una ACTUALIZACIÓN
-            if (!txtId.getText().trim().isEmpty()) {
-                campania.setId(Integer.parseInt(txtId.getText()));
+            // Parseo de Fechas (Manejo simple)
+            dto.fechaInicio = LocalDate.parse(txtFechaInicio.getText());
+            dto.fechaFin = LocalDate.parse(txtFechaFin.getText());
+
+            if (txtIdOculto.getText().isEmpty()) {
+                campaniaService.registrarCampania(dto);
+            } else {
+                dto.idCampania = Long.parseLong(txtIdOculto.getText());
+                campaniaService.actualizarCampania(dto);
             }
-
-            // Mapeo de campos de texto a la entidad
-            campania.setNombre(txtNombre.getText());
-            campania.setTipoCampania(txtTipo.getText());
             
-            // Manejo de fechas (Se requiere parseo y manejo de errores)
-            campania.setFechaInicio(LocalDate.parse(txtFechaInicio.getText()));
+            JOptionPane.showMessageDialog(this, "✅ Campaña guardada exitosamente.");
+            limpiar();
+            cargarTabla();
             
-            String fechaFinStr = txtFechaFin.getText();
-            campania.setFechaFin(fechaFinStr.isEmpty() || fechaFinStr.equals("AAAA-MM-DD") ? null : LocalDate.parse(fechaFinStr));
-            
-            campania.setSupervisoresCargo(txtSupervisores.getText());
-            campania.setDescripcionObjetivos(txtObjetivos.getText());
-            // El estado se puede definir en el servicio o aquí.
-            campania.setEstado("ACTIVA");
-
-            // Llamada al servicio
-            campaniaService.crearOActualizarCampania(campania);
-            
-            JOptionPane.showMessageDialog(this, "Campaña guardada con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            limpiarCampos();
-            cargarDatosTabla();
-
-        } catch (java.time.format.DateTimeParseException e) {
-            JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use AAAA-MM-DD.", "Error de Entrada", JOptionPane.WARNING_MESSAGE);
-        } catch (IllegalArgumentException e) {
-            // Captura errores de validación del Servicio (CampaniaService)
-            JOptionPane.showMessageDialog(this, "Error de validación: " + e.getMessage(), "Error de Negocio", JOptionPane.WARNING_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al guardar la campaña: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (DateTimeParseException dtpe) {
+            JOptionPane.showMessageDialog(this, "❌ Formato de fecha inválido. Use: YYYY-MM-DD (Ej: 2025-01-30)");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
-    
-    /**
-     * Elimina la campaña seleccionada en la tabla.
-     */
-    private void eliminarCampania() {
-        int fila = tablaCampanias.getSelectedRow();
-        
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una fila para eliminar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+
+    private void eliminar() {
+        if (txtIdOculto.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Seleccione una campaña de la tabla.");
             return;
         }
-        
         try {
-            // El ID está en la columna 0 (oculta)
-            int idCampania = (int) tablaCampanias.getValueAt(fila, 0); 
-            
-            int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar la campaña " + idCampania + "?", 
-                                                        "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
-            
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (campaniaService.eliminarCampania(idCampania)) {
-                    JOptionPane.showMessageDialog(this, "Campaña eliminada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                    limpiarCampos();
-                    cargarDatosTabla();
-                } else {
-                    JOptionPane.showMessageDialog(this, "No se pudo eliminar la campaña (posiblemente no existe).", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al intentar eliminar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            Long id = Long.parseLong(txtIdOculto.getText());
+            campaniaService.eliminarCampania(id); // Asumiendo método eliminarCampania
+            limpiar();
+            cargarTabla();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage());
         }
     }
 
-    /**
-     * Muestra los datos de la fila seleccionada en los campos de texto.
-     */
-    private void mostrarSeleccionEnCampos() {
+    private void seleccionarFila() {
         int fila = tablaCampanias.getSelectedRow();
-        if (fila != -1) {
-            txtId.setText(tablaCampanias.getValueAt(fila, 0).toString());
-            txtNombre.setText(tablaCampanias.getValueAt(fila, 1).toString());
-            txtTipo.setText(tablaCampanias.getValueAt(fila, 2).toString());
-            txtFechaInicio.setText(tablaCampanias.getValueAt(fila, 3).toString());
-            
-            // Manejo de valores nulos o vacíos
-            Object fechaFin = tablaCampanias.getValueAt(fila, 4);
-            txtFechaFin.setText(fechaFin != null ? fechaFin.toString() : "AAAA-MM-DD");
-            
-            Object supervisores = tablaCampanias.getValueAt(fila, 5);
-            txtSupervisores.setText(supervisores != null ? supervisores.toString() : "");
-            
-            Object objetivos = tablaCampanias.getValueAt(fila, 6);
-            txtObjetivos.setText(objetivos != null ? objetivos.toString() : "");
+        if (fila >= 0) {
+            txtIdOculto.setText(modeloTabla.getValueAt(fila, 0).toString());
+            txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+            cbTipo.setSelectedItem(modeloTabla.getValueAt(fila, 2).toString());
+            txtFechaInicio.setText(modeloTabla.getValueAt(fila, 3).toString());
+            txtFechaFin.setText(modeloTabla.getValueAt(fila, 4).toString());
+            txtSupervisor.setText(modeloTabla.getValueAt(fila, 5).toString());
+            txtDescripcion.setText(modeloTabla.getValueAt(fila, 6).toString());
         }
     }
 
-    /**
-     * Limpia todos los campos de entrada.
-     */
-    private void limpiarCampos() {
-        txtId.setText("");
+    private void limpiar() {
+        txtIdOculto.setText("");
         txtNombre.setText("");
-        txtTipo.setText("");
-        txtFechaInicio.setText("AAAA-MM-DD");
-        txtFechaFin.setText("AAAA-MM-DD");
-        txtSupervisores.setText("");
-        txtObjetivos.setText("");
+        txtSupervisor.setText("");
+        txtFechaInicio.setText("");
+        txtFechaFin.setText("");
+        txtDescripcion.setText("");
+        cbTipo.setSelectedIndex(0);
         tablaCampanias.clearSelection();
     }
-    
-    // Método principal para ejecutar la aplicación (opcional)
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new FrmGestionCampanias().setVisible(true);
-        });
-    }
 }
-    
-    
     
     
     
