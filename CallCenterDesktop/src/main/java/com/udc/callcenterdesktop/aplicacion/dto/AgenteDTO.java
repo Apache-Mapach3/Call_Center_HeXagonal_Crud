@@ -5,14 +5,13 @@
 package com.udc.callcenterdesktop.aplicacion.dto;
 
 /**
- *
- * @author Admin
- */
-/**
- * Data Transfer Object para Agente.
- * Objeto plano para transportar datos entre la Vista y el Servicio.
+ * Data Transfer Object (DTO) para Agente.
+ * Sirve para transportar datos desde la Vista hacia el Servicio
+ * sin exponer la Entidad de Dominio directamente.
  */
 public class AgenteDTO {
+    
+    // Usamos modificadores public para acceso directo (patrón común en DTOs puros)
     public Long id;
     public String nombre;
     public String numeroEmpleado;
@@ -21,15 +20,17 @@ public class AgenteDTO {
     public String turno;
     public String experiencia;
 
-    public AgenteDTO() {}
+    public AgenteDTO() {
+    }
 
-    public AgenteDTO(Long id, String nombre, String num, String tel, String email, String turno, String exp) {
+    // Constructor auxiliar para facilitar la creación
+    public AgenteDTO(Long id, String nombre, String numeroEmpleado, String telefono, String email, String turno, String experiencia) {
         this.id = id;
         this.nombre = nombre;
-        this.numeroEmpleado = num;
-        this.telefono = tel;
+        this.numeroEmpleado = numeroEmpleado;
+        this.telefono = telefono;
         this.email = email;
         this.turno = turno;
-        this.experiencia = exp;
+        this.experiencia = experiencia;
     }
 }

@@ -4,20 +4,17 @@
  */
 package com.udc.callcenterdesktop.dominio.puertos.entrada;
 
-/**
- *
- * @author Admin
- */
 import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
 import java.util.List;
 
 /**
- * Puerto de Entrada ACTUALIZADO.
- * Ahora usa DTOs para cumplir con la arquitectura Hexagonal estricta.
+ * Puerto de Entrada (Input Port).
+ * Define las operaciones disponibles para la gestión de Agentes.
+ * Usa DTOs para cumplir con la arquitectura Hexagonal estricta.
  */
 public interface IAgenteService {
     
-    // Todos los métodos deben recibir/devolver DTOs, NO Entidades
+    // Recibe y devuelve DTOs (Data Transfer Objects), NO Entidades
     void registrarAgente(AgenteDTO dto);
     
     List<AgenteDTO> listarAgentes();

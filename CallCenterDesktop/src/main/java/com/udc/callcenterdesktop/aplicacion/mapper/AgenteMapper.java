@@ -4,25 +4,39 @@
  */
 package com.udc.callcenterdesktop.aplicacion.mapper;
 
-/**
- *
- * @author Admin
- */
 import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 
 /**
- * Traductor entre DTOs y Entidades.
+ * Clase utilitaria para convertir entre DTOs y Entidades.
  */
 public class AgenteMapper {
 
+    // De DTO (Vista) a Dominio (Entidad)
     public static Agente toEntity(AgenteDTO dto) {
         if (dto == null) return null;
-        return new Agente(dto.id, dto.nombre, dto.numeroEmpleado, dto.telefono, dto.email, dto.turno, dto.experiencia);
+        return new Agente(
+            dto.id,
+            dto.nombre,
+            dto.numeroEmpleado,
+            dto.telefono,
+            dto.email,
+            dto.turno,
+            dto.experiencia
+        );
     }
 
+    // De Dominio (Entidad) a DTO (Vista)
     public static AgenteDTO toDTO(Agente entity) {
         if (entity == null) return null;
-        return new AgenteDTO(entity.getIdAgente(), entity.getNombreCompleto(), entity.getNumeroEmpleado(), entity.getTelefonoContacto(), entity.getEmail(), entity.getHorarioTurno(), entity.getNivelExperiencia());
+        return new AgenteDTO(
+            entity.getIdAgente(),
+            entity.getNombreCompleto(),
+            entity.getNumeroEmpleado(),
+            entity.getTelefonoContacto(),
+            entity.getEmail(),
+            entity.getHorarioTurno(),
+            entity.getNivelExperiencia()
+        );
     }
 }
