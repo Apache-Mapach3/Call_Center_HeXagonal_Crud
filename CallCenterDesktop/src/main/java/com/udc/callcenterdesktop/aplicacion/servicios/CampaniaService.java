@@ -5,68 +5,63 @@
 package com.udc.callcenterdesktop.aplicacion.servicios;
 
 
+import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
+import com.udc.callcenterdesktop.aplicacion.mapper.CampaniaMapper;
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
-import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService; // ⬅️ Puerto de Entrada
-import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository; // ⬅️ Puerto de Salida (dependencia)
-
-import java.time.LocalDate;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService;
+import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementación de la Lógica de Negocio.
- * Implementa el contrato ICampaniaService y utiliza el ICampaniaRepository
- * para las operaciones de persistencia.
  */
-public class CampaniaService implements ICampaniaService { // ⬅️ ¡IMPLEMENTACIÓN CLAVE!
+public class CampaniaService implements ICampaniaService {
+
+    private final ICampaniaRepository repositorio;
+
+    public CampaniaService(ICampaniaRepository repositorio) {
+        this.repositorio = repositorio;
+    }
+
+    @Override
+    public void registrarCampania(CampaniaDTO dto) {
+        Campania entidad = CampaniaMapper.toEntity(dto);
+        validar(entidad);
+        repositorio.guardar(entidad);
+    }
+
+    @Override
+    public List<CampaniaDTO> listarCampanias() {
+        return repositorio.listarTodos().stream()
+                .map(CampaniaMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void actualizarCampania(CampaniaDTO dto) {
+        if (dto.idCampania == null) throw new CallCenterException("ID requerido para actualizar.");
+        Campania entidad = CampaniaMapper.toEntity(dto);
+        validar(entidad);
+        repositorio.actualizar(entidad);
+    }
+
+    @Override
+    public void eliminarCampania(Long id) {
+        if (id == null) throw new CallCenterException("ID nulo.");
+        repositorio.eliminar(id);
+    }
     
-    // El servicio solo depende de la INTERFAZ (Puerto) del repositorio
-    private final ICampaniaRepository campaniaRepository;
-
-    /**
-     * Constructor para Inyección de Dependencia.
-     * @param campaniaRepository El adaptador de persistencia (implementación del puerto).
-     */
-    public CampaniaService(ICampaniaRepository campaniaRepository) {
-        this.campaniaRepository = campaniaRepository;
-    }
-
-    @Override
-    public Campania crearOActualizarCampania(Campania campania) {
-        // [Regla de Negocio 1]: Validar fechas
-        if (campania.getFechaInicio().isAfter(campania.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
+    private void validar(Campania c) {
+        if (c.getNombreCampania() == null || c.getNombreCampania().isEmpty()) {
+            throw new CallCenterException("El nombre de la campaña es obligatorio.");
         }
-        // Llamada al puerto de salida
-        return campaniaRepository.guardar(campania);
-    }
-
-    @Override
-    public Optional<Campania> obtenerCampaniaPorId(int id) {
-        return campaniaRepository.buscarPorId(id);
-    }
-
-    @Override
-    public List<Campania> obtenerTodasCampanias() {
-        return campaniaRepository.buscarTodas();
-    }
-
-    @Override
-    public boolean eliminarCampania(int id) {
-        // [Regla de Negocio 2]: Podría incluir una verificación antes de eliminar.
-        return campaniaRepository.eliminarPorId(id);
-    }
-
-    @Override
-    public List<Campania> obtenerCampaniasActivas(LocalDate fechaActual) {
-        // Lógica de filtrado de negocio
-        return campaniaRepository.buscarTodas().stream()
-                .filter(c -> !c.getFechaInicio().isAfter(fechaActual) && 
-                             !c.getFechaFin().isBefore(fechaActual))
-                .toList();
+        if (c.getFechaFin() != null && c.getFechaInicio() != null && c.getFechaFin().isBefore(c.getFechaInicio())) {
+            throw new CallCenterException("La fecha fin no puede ser anterior a la de inicio.");
+        }
     }
 }
-
     
     
     

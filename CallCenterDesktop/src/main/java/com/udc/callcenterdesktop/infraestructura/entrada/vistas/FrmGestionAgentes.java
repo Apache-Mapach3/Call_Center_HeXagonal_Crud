@@ -8,129 +8,108 @@ package com.udc.callcenterdesktop.infraestructura.entrada.vistas;
  *
  * @author Admin
  */
-import com.udc.callcenterdesktop.aplicacion.servicios.AgenteService;
-import com.udc.callcenterdesktop.dominio.modelo.Agente;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 public class FrmGestionAgentes extends JFrame {
 
-    private AgenteService agenteService;
+    private final IAgenteService agenteService;
+    
+    private JTextField txtId, txtNombre, txtNum, txtTel, txtEmail;
+    private JComboBox<String> cbTurno, cbExp;
+    private JTable tabla;
+    private DefaultTableModel modelo;
 
-    // Componentes
-    private JTextField txtNombre, txtNumeroEmpleado, txtTelefono, txtEmail;
-    private JComboBox<String> cbHorario, cbExperiencia;
-    private JButton btnGuardar, btnLimpiar;
-
-    // Constructor vacio
-    public FrmGestionAgentes() {
-        initUI();
-    }
-
-    // Constructor con servicio
-    public FrmGestionAgentes(AgenteService service) {
+    public FrmGestionAgentes(IAgenteService service) {
         this.agenteService = service;
         initUI();
+        cargarTabla();
     }
 
     private void initUI() {
         setTitle("Gestión de Agentes");
-        setSize(500, 500);
+        setSize(900, 650);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Titulo
-        JPanel panelTitulo = new JPanel();
-        panelTitulo.setBackground(new Color(0, 102, 204));
-        JLabel lblTitulo = new JLabel("Registro de Agentes");
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        panelTitulo.add(lblTitulo);
+        // Header Azul
+        JPanel pH = new JPanel(); pH.setBackground(new Color(0, 102, 204));
+        JLabel l = new JLabel("ADMINISTRACIÓN DE AGENTES"); l.setForeground(Color.WHITE); l.setFont(new Font("Arial", Font.BOLD, 20));
+        pH.add(l); add(pH, BorderLayout.NORTH);
 
         // Formulario
-        JPanel panelForm = new JPanel(new GridLayout(6, 2, 10, 15));
-        panelForm.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-
-        txtNombre = new JTextField();
-        txtNumeroEmpleado = new JTextField();
-        txtTelefono = new JTextField();
-        txtEmail = new JTextField();
-        cbHorario = new JComboBox<>(new String[]{"Mañana", "Tarde", "Noche"});
-        cbExperiencia = new JComboBox<>(new String[]{"Junior", "Intermedio", "Senior"});
-
-        panelForm.add(crearLabel("Nombre Completo:")); panelForm.add(txtNombre);
-        panelForm.add(crearLabel("ID Empleado:")); panelForm.add(txtNumeroEmpleado);
-        panelForm.add(crearLabel("Teléfono:")); panelForm.add(txtTelefono);
-        panelForm.add(crearLabel("Email:")); panelForm.add(txtEmail);
-        panelForm.add(crearLabel("Horario:")); panelForm.add(cbHorario);
-        panelForm.add(crearLabel("Experiencia:")); panelForm.add(cbExperiencia);
+        JPanel pF = new JPanel(new GridLayout(3, 4, 10, 10)); pF.setBorder(BorderFactory.createTitledBorder("Datos"));
+        txtId = new JTextField(); txtId.setVisible(false);
+        txtNombre = new JTextField(); txtNum = new JTextField(); txtTel = new JTextField(); txtEmail = new JTextField();
+        cbTurno = new JComboBox<>(new String[]{"Mañana", "Tarde", "Noche"});
+        cbExp = new JComboBox<>(new String[]{"Junior", "Intermedio", "Senior"});
+        
+        pF.add(new JLabel("Nombre:")); pF.add(txtNombre);
+        pF.add(new JLabel("Nro Emp:")); pF.add(txtNum);
+        pF.add(new JLabel("Teléfono:")); pF.add(txtTel);
+        pF.add(new JLabel("Email:")); pF.add(txtEmail);
+        pF.add(new JLabel("Turno:")); pF.add(cbTurno);
+        pF.add(new JLabel("Nivel:")); pF.add(cbExp);
 
         // Botones
-        JPanel panelBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        btnGuardar = new JButton("GUARDAR");
-        btnLimpiar = new JButton("LIMPIAR");
-        
-        btnGuardar.setBackground(new Color(40, 167, 69));
-        btnGuardar.setForeground(Color.WHITE);
-        
-        // Acción Guardar
-        btnGuardar.addActionListener((ActionEvent e) -> guardar());
-        btnLimpiar.addActionListener((ActionEvent e) -> limpiar());
+        JPanel pB = new JPanel();
+        JButton b1 = new JButton("GUARDAR"); b1.addActionListener(e -> guardar());
+        JButton b2 = new JButton("ELIMINAR"); b2.addActionListener(e -> eliminar());
+        JButton b3 = new JButton("LIMPIAR"); b3.addActionListener(e -> limpiar());
+        pB.add(b1); pB.add(b2); pB.add(b3);
 
-        panelBtn.add(btnGuardar);
-        panelBtn.add(btnLimpiar);
+        JPanel pC = new JPanel(new BorderLayout()); pC.add(pF, BorderLayout.CENTER); pC.add(pB, BorderLayout.SOUTH);
+        add(pC, BorderLayout.CENTER);
 
-        add(panelTitulo, BorderLayout.NORTH);
-        add(panelForm, BorderLayout.CENTER);
-        add(panelBtn, BorderLayout.SOUTH);
+        // Tabla
+        modelo = new DefaultTableModel(null, new String[]{"ID", "Nombre", "Nro", "Tel", "Email", "Turno", "Nivel"});
+        tabla = new JTable(modelo);
+        tabla.addMouseListener(new MouseAdapter() { public void mouseClicked(MouseEvent e) { sel(); } });
+        add(new JScrollPane(tabla), BorderLayout.SOUTH);
     }
 
-    private JLabel crearLabel(String texto) {
-        JLabel l = new JLabel(texto);
-        l.setHorizontalAlignment(SwingConstants.RIGHT);
-        return l;
+    private void cargarTabla() {
+        modelo.setRowCount(0);
+        List<AgenteDTO> l = agenteService.listarAgentes();
+        for (AgenteDTO a : l) modelo.addRow(new Object[]{a.id, a.nombre, a.numeroEmpleado, a.telefono, a.email, a.turno, a.experiencia});
     }
 
     private void guardar() {
-        if (agenteService == null) {
-            JOptionPane.showMessageDialog(this, "Modo diseño (Sin conexión)");
-            return;
-        }
-        // Crear objeto y mandar a guardar
         try {
-            Agente a = new Agente(null, 
-                txtNombre.getText(), 
-                txtNumeroEmpleado.getText(), 
-                txtTelefono.getText(), 
-                txtEmail.getText(), 
-                (String)cbHorario.getSelectedItem(), 
-                (String)cbExperiencia.getSelectedItem()
+            AgenteDTO d = new AgenteDTO(
+                txtId.getText().isEmpty() ? null : Long.parseLong(txtId.getText()),
+                txtNombre.getText(), txtNum.getText(), txtTel.getText(), txtEmail.getText(),
+                cbTurno.getSelectedItem().toString(), cbExp.getSelectedItem().toString()
             );
-            agenteService.registrarAgente(a);
-            limpiar();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-        }
+            if (d.id == null) agenteService.registrarAgente(d);
+            else agenteService.actualizarAgente(d);
+            JOptionPane.showMessageDialog(this, "Éxito"); limpiar(); cargarTabla();
+        } catch (Exception e) { JOptionPane.showMessageDialog(this, "Error: " + e.getMessage()); }
     }
 
-    private void limpiar() {
-        txtNombre.setText("");
-        txtNumeroEmpleado.setText("");
-        txtTelefono.setText("");
-        txtEmail.setText("");
+    private void eliminar() {
+        if(txtId.getText().isEmpty()) return;
+        agenteService.eliminarAgente(Long.parseLong(txtId.getText()));
+        limpiar(); cargarTabla();
     }
+
+    private void sel() {
+        int r = tabla.getSelectedRow();
+        if (r >= 0) {
+            txtId.setText(modelo.getValueAt(r, 0).toString());
+            txtNombre.setText(modelo.getValueAt(r, 1).toString());
+            txtNum.setText(modelo.getValueAt(r, 2).toString());
+            txtTel.setText(modelo.getValueAt(r, 3).toString());
+            txtEmail.setText(modelo.getValueAt(r, 4).toString());
+            cbTurno.setSelectedItem(modelo.getValueAt(r, 5).toString());
+            cbExp.setSelectedItem(modelo.getValueAt(r, 6).toString());
+        }
+    }
+    private void limpiar() { txtId.setText(""); txtNombre.setText(""); txtNum.setText(""); txtTel.setText(""); txtEmail.setText(""); }
 }

@@ -12,11 +12,9 @@ package com.udc.callcenterdesktop.dominio.excepciones;
  * Excepción genérica de la aplicación Call Center.
  * Permite manejar errores de negocio o infraestructura de forma centralizada.
  */
+
 public class CallCenterException extends RuntimeException {
-
-    // Se extiende RuntimeException para que no sea obligatorio manejarla
-    // en cada método (Checked Exception).
-
+    
     public CallCenterException(String mensaje) {
         super(mensaje);
     }
@@ -24,8 +22,7 @@ public class CallCenterException extends RuntimeException {
     public CallCenterException(String mensaje, Throwable causa) {
         super(mensaje, causa);
     }
-}
-    
+}  
     
     
     

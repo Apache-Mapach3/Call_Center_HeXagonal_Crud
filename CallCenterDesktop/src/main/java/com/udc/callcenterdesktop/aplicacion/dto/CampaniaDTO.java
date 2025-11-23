@@ -3,12 +3,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.udc.callcenterdesktop.aplicacion.dto;
-
+/**
+ *
+ * @author camolano
+ */
 import java.time.LocalDate;
 
+/**
+ * Data Transfer Object para Campaña.
+ * Aísla la vista del modelo de dominio.
+ */
 public class CampaniaDTO {
     
-    // Datos públicos para facilitar el acceso desde la vista
     public Long idCampania;
     public String nombreCampania;
     public String tipoCampania;
@@ -17,19 +23,17 @@ public class CampaniaDTO {
     public String supervisoresCargo;
     public String descripcionObjetivos;
 
-    // Constructor vacío
     public CampaniaDTO() {
     }
 
-    // Constructor completo
-    public CampaniaDTO(Long idCampania, String nombreCampania, String tipoCampania, LocalDate fechaInicio, LocalDate fechaFin, String supervisoresCargo, String descripcionObjetivos) {
-        this.idCampania = idCampania;
-        this.nombreCampania = nombreCampania;
-        this.tipoCampania = tipoCampania;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
-        this.supervisoresCargo = supervisoresCargo;
-        this.descripcionObjetivos = descripcionObjetivos;
+    public CampaniaDTO(Long id, String nombre, String tipo, LocalDate inicio, LocalDate fin, String supervisor, String descripcion) {
+        this.idCampania = id;
+        this.nombreCampania = nombre;
+        this.tipoCampania = tipo;
+        this.fechaInicio = inicio;
+        this.fechaFin = fin;
+        this.supervisoresCargo = supervisor;
+        this.descripcionObjetivos = descripcion;
     }
 }
     
