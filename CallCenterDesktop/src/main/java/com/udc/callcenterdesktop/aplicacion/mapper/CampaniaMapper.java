@@ -4,56 +4,27 @@
  */
 package com.udc.callcenterdesktop.aplicacion.mapper;
 
-/**
- *
- * @author camolano
- */
-
-    import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
+import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 
-
-// Si usas un Mapper estático, omite la clase. Si es una clase, debe ser similar a esto:
+/**
+ * Traductor entre DTOs y Entidades.
+ */
 public class CampaniaMapper {
 
-    // Método para convertir DTO a Entidad (Campania)
-    public Campania toEntity(CampaniaDTO dto) {
-        // 🛑 CORRECCIÓN: Usar el constructor de 8 parámetros y asegurar que el ID sea INT
-        // El DTO puede tener el ID como Long, por lo que usamos .intValue()
-        
-    
+    public static Campania toEntity(CampaniaDTO dto) {
+        if (dto == null) return null;
+        return new Campania(
+            dto.idCampania, dto.nombreCampania, dto.tipoCampania,
+            dto.fechaInicio, dto.fechaFin, dto.supervisoresCargo, dto.descripcionObjetivos
+        );
+    }
 
-   
-    public CampaniaDTO toDTO(Campania entity) {
-        CampaniaDTO dto = new CampaniaDTO();
-        
-        // 🛑 CORRECCIÓN: Usar los getters correctos (getId(), getNombre())
-        dto.setId((long) entity.getId()); // CORRECCIÓN: Convertimos int a Long para el DTO
-        dto.setNombre(entity.getNombre()); // CORRECCIÓN: Usar getNombre()
-        dto.setTipoCampania(entity.getTipoCampania());
-        dto.setFechaInicio(entity.getFechaInicio());
-        dto.setFechaFin(entity.getFechaFin());
-        dto.setSupervisoresCargo(entity.getSupervisoresCargo());
-        dto.setDescripcionObjetivos(entity.getDescripcionObjetivos());
-        dto.setEstado(entity.getEstado());
-        return dto;
+    public static CampaniaDTO toDTO(Campania entity) {
+        if (entity == null) return null;
+        return new CampaniaDTO(
+            entity.getIdCampania(), entity.getNombreCampania(), entity.getTipoCampania(),
+            entity.getFechaInicio(), entity.getFechaFin(), entity.getSupervisoresCargo(), entity.getDescripcionObjetivos()
+        );
     }
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-

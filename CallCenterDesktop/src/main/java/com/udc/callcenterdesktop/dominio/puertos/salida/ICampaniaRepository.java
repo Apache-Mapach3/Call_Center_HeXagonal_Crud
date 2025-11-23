@@ -4,33 +4,20 @@
  */
 package com.udc.callcenterdesktop.dominio.puertos.salida;
 
-
-
-import com.udc.callcenterdesktop.dominio.modelo.Campania;
-import java.util.List;
-import java.util.Optional;
-
 /**
  *
  * @author camolano
  */
-public class ICampaniaRepository {
+import com.udc.callcenterdesktop.dominio.modelo.Campania;
+import java.util.List;
 
-    public Campania guardar(Campania campania) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public Optional<Campania> buscarPorId(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public List<Campania> buscarTodas() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public boolean eliminarPorId(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+/**
+ * Puerto de Salida (Output Port).
+ * Define el contrato que debe cumplir cualquier adaptador de persistencia.
+ */
+public interface ICampaniaRepository {
+    void guardar(Campania campania);
+    List<Campania> listarTodos();
+    void actualizar(Campania campania);
+    void eliminar(Long id);
 }
-    
-

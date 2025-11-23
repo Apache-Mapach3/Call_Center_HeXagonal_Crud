@@ -6,95 +6,39 @@ package com.udc.callcenterdesktop.dominio.modelo;
 
 import java.time.LocalDate;
 
+/**
+ * Entidad pura del negocio: Campaña.
+ * Representa una estrategia de marketing o servicio.
+ * No debe tener anotaciones de BD ni librerías visuales.
+ */
 public class Campania {
 
-    
-    
-
-    private int id; // Corresponde a id_campania
-    private String nombre; // Corresponde a nombre_campania
+    private Long idCampania;
+    private String nombreCampania;
     private String tipoCampania;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private String supervisoresCargo;
     private String descripcionObjetivos;
-    private String estado; 
 
-    
-   
-   
     public Campania() {
-        // Constructor vacío (necesario para mapeo JDBC)
     }
 
-    // Constructor completo (ajusta a 8 parámetros, ID como int)
-    public Campania(int id, String nombre, String tipoCampania, LocalDate fechaInicio, LocalDate fechaFin, String supervisoresCargo, String descripcionObjetivos, String estado) {
-        this.id = id;
-        this.nombre = nombre;
+    public Campania(Long idCampania, String nombreCampania, String tipoCampania, LocalDate fechaInicio, LocalDate fechaFin, String supervisoresCargo, String descripcionObjetivos) {
+        this.idCampania = idCampania;
+        this.nombreCampania = nombreCampania;
         this.tipoCampania = tipoCampania;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.supervisoresCargo = supervisoresCargo;
         this.descripcionObjetivos = descripcionObjetivos;
-        this.estado = estado;
     }
 
-   
-    // 3. GETTERS Y SETTERS (Resuelve los errores 'cannot find symbol method...')
+    // Getters y Setters
+    public Long getIdCampania() { return idCampania; }
+    public void setIdCampania(Long idCampania) { this.idCampania = idCampania; }
 
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getNombreCampania() { return nombreCampania; }
+    public void setNombreCampania(String nombreCampania) { this.nombreCampania = nombreCampania; }
 
-    public String getNombre() {
-        return nombre;
-    }
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getTipoCampania() {
-        return tipoCampania;
-    }
-    public void setTipoCampania(String tipoCampania) {
-        this.tipoCampania = tipoCampania;
-    }
-
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
-    }
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
-
-    public LocalDate getFechaFin() {
-        return fechaFin;
-    }
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
-    }
-
-    public String getSupervisoresCargo() {
-        return supervisoresCargo;
-    }
-    public void setSupervisoresCargo(String supervisoresCargo) {
-        this.supervisoresCargo = supervisoresCargo;
-    }
-
-    public String getDescripcionObjetivos() {
-        return descripcionObjetivos;
-    }
-    public void setDescripcionObjetivos(String descripcionObjetivos) {
-        this.descripcionObjetivos = descripcionObjetivos;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-}
+    public String getTipoCampania() { return tipoCamp

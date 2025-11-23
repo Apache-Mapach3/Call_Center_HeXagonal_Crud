@@ -4,82 +4,65 @@
  */
 package com.udc.callcenterdesktop.aplicacion.servicios;
 
-
-import com.udc.callcenterdesktop.dominio.modelo.Campania;
-import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService; // ⬅️ Puerto de Entrada
-import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository; // ⬅️ Puerto de Salida (dependencia)
-
-import java.time.LocalDate;
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
+import com.udc.callcenterdesktop.aplicacion.mapper.AgenteMapper;
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
+import com.udc.callcenterdesktop.dominio.modelo.Agente;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService;
+import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
+/**
+ * Lógica de Negocio.
+ * Implementa las validaciones y coordina el flujo de datos.
+ */
+public class AgenteService implements IAgenteService { // CORREGIDO: Ya no es abstract
 
-public class CampaniaService implements ICampaniaService { // ⬅️ ¡IMPLEMENTACIÓN CLAVE!
-    
-    
-    private final ICampaniaRepository campaniaRepository;
+    private final IAgenteRepository repositorio;
 
-    /**
-     * Constructor para Inyección de Dependencia.
-     * @param campaniaRepository El adaptador de persistencia (implementación del puerto).
-     */
-    public CampaniaService(ICampaniaRepository campaniaRepository) {
-        this.campaniaRepository = campaniaRepository;
+    public AgenteService(IAgenteRepository repositorio) {
+        this.repositorio = repositorio;
     }
 
     @Override
-    public Campania crearOActualizarCampania(Campania campania) {
-        // [Regla de Negocio 1]: Validar fechas
-        if (campania.getFechaInicio().isAfter(campania.getFechaFin())) {
-            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
+    public void registrarAgente(AgenteDTO dto) {
+        Agente entidad = AgenteMapper.toEntity(dto);
+        validar(entidad);
+        repositorio.guardar(entidad);
+    }
+
+    @Override
+    public List<AgenteDTO> listarAgentes() {
+        return repositorio.listarTodos().stream()
+                .map(AgenteMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void actualizarAgente(AgenteDTO dto) {
+        // CORREGIDO: Mantenemos la validación del Main
+        if (dto.id == null) throw new CallCenterException("ID necesario para actualizar.");
+        
+        Agente entidad = AgenteMapper.toEntity(dto);
+        validar(entidad);
+        repositorio.actualizar(entidad);
+    }
+
+    @Override
+    public void eliminarAgente(Long id) {
+        if (id == null) throw new CallCenterException("ID nulo.");
+        // NOTA: No ponemos JOptionPane aquí. La confirmación visual se hace en la Vista.
+        repositorio.eliminar(id);
+    }
+    
+    // Validaciones de negocio usando Excepciones (Correcto)
+    private void validar(Agente a) {
+        if (a.getNombreCompleto() == null || a.getNombreCompleto().isEmpty()) {
+            throw new CallCenterException("El nombre es obligatorio.");
         }
-        // Llamada al puerto de salida
-        return campaniaRepository.guardar(campania);
-    }
-
-    @Override
-    public Optional<Campania> obtenerCampaniaPorId(int id) {
-        return campaniaRepository.buscarPorId(id);
-    }
-
-    @Override
-    public List<Campania> obtenerTodasCampanias() {
-        return campaniaRepository.buscarTodas();
-    }
-
-    @Override
-    public boolean eliminarCampania(int id) {
-        // [Regla de Negocio 2]: Podría incluir una verificación antes de eliminar.
-        return campaniaRepository.eliminarPorId(id);
-    }
-
-    @Override
-    public List<Campania> obtenerCampaniasActivas(LocalDate fechaActual) {
-        // Lógica de filtrado de negocio
-        return campaniaRepository.buscarTodas().stream()
-                .filter(c -> !c.getFechaInicio().isAfter(fechaActual) && 
-                             !c.getFechaFin().isBefore(fechaActual))
-                .toList();
+        if (a.getEmail() == null || !a.getEmail().contains("@")) {
+            throw new CallCenterException("El email no es válido.");
+        }
     }
 }
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-

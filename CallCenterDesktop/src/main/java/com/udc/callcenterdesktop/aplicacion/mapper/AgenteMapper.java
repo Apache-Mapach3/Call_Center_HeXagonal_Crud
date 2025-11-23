@@ -7,38 +7,36 @@ package com.udc.callcenterdesktop.aplicacion.mapper;
 import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 
-
+/**
+ * Clase utilitaria para convertir entre DTOs y Entidades.
+ */
 public class AgenteMapper {
 
-    
-    public Agente toEntity(AgenteDTO dto) {
-        Agente entity = new Agente();
-        
-       
-        entity.setId(dto.getId() != null ? dto.getId().intValue() : 0);
-        
-        entity.setCodigoAgente(dto.getCodigoAgente());
-        entity.setNombre(dto.getNombre());
-        entity.setApellido(dto.getApellido());
-        entity.setEmail(dto.getEmail());
-        entity.setEstado(dto.getEstado());
-        
-        return entity;
+    // De DTO (Vista) a Dominio (Entidad)
+    public static Agente toEntity(AgenteDTO dto) {
+        if (dto == null) return null;
+        return new Agente(
+            dto.id,
+            dto.nombre,
+            dto.numeroEmpleado,
+            dto.telefono,
+            dto.email,
+            dto.turno,
+            dto.experiencia
+        );
     }
 
-    
-    public AgenteDTO toDTO(Agente entity) {
-        AgenteDTO dto = new AgenteDTO();
-        
-        // Mapeamos el ID: int de la Entidad a Long del DTO
-        dto.setId((long) entity.getId());
-        
-        dto.setCodigoAgente(entity.getCodigoAgente());
-        dto.setNombre(entity.getNombre());
-        dto.setApellido(entity.getApellido());
-        dto.setEmail(entity.getEmail());
-        dto.setEstado(entity.getEstado());
-        
-        return dto;
+    // De Dominio (Entidad) a DTO (Vista)
+    public static AgenteDTO toDTO(Agente entity) {
+        if (entity == null) return null;
+        return new AgenteDTO(
+            entity.getIdAgente(),
+            entity.getNombreCompleto(),
+            entity.getNumeroEmpleado(),
+            entity.getTelefonoContacto(),
+            entity.getEmail(),
+            entity.getHorarioTurno(),
+            entity.getNivelExperiencia()
+        );
     }
 }
