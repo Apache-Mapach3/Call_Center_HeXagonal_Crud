@@ -65,7 +65,7 @@ public class FrmGestionAgentes extends JFrame {
         // TITULO
         JPanel panelTitulo = new JPanel();
         panelTitulo.setBackground(new Color(0, 102, 204));
-        JLabel lblTitulo = new JLabel("Administración de Agentes (Modo Dios)");
+        JLabel lblTitulo = new JLabel("Administración de Agentes)");
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         panelTitulo.add(lblTitulo);
@@ -175,13 +175,13 @@ public class FrmGestionAgentes extends JFrame {
                 agenteService.actualizarAgente(dto);
             }
             
-            JOptionPane.showMessageDialog(this, "✅ Operación exitosa.");
+            JOptionPane.showMessageDialog(this, " Operación exitosa.");
             limpiar();
             cargarTabla();
             
         } catch (CallCenterException ex) {
             // Capturamos nuestra excepción personalizada
-            JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error de Negocio", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, " x " + ex.getMessage(), "Error de Negocio", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error inesperado: " + ex.getMessage());
         }
@@ -198,7 +198,7 @@ public class FrmGestionAgentes extends JFrame {
             limpiar();
             cargarTabla();
         } catch (CallCenterException ex) {
-            JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, " x " + ex.getMessage());
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
