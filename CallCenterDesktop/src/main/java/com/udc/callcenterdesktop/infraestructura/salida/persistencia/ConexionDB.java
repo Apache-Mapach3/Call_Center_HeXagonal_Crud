@@ -19,25 +19,22 @@ import javax.swing.JOptionPane;
  */
 public class ConexionDB {
 
-    // Constantes de configuración (Evitar "números mágicos" en el código)
+   
     private static final String URL = "jdbc:mysql://localhost:3306/call_center_db?serverTimezone=UTC";
     private static final String USER = "root";
     private static final String PASSWORD = ""; // Vacío para Laragon
 
-    /**
-     * Obtiene una nueva conexión a la base de datos.
-     * @return Objeto Connection activo o null si falla.
-     */
+   
     public static Connection obtenerConexion() {
         Connection conexion = null;
         try {
-            // Carga dinámica del driver (MySQL Connector/J)
+          
             Class.forName("com.mysql.cj.jdbc.Driver");
             
-            // Intento de conexión
+       
             conexion = DriverManager.getConnection(URL, USER, PASSWORD);
             
-            // Log para depuración (útil en desarrollo)
+           
             System.out.println("[ConexionDB] Conexión establecida con MySQL.");
             
         } catch (ClassNotFoundException e) {
@@ -48,5 +45,9 @@ public class ConexionDB {
             JOptionPane.showMessageDialog(null, "Error de conexión a BD: " + e.getMessage());
         }
         return conexion;
+    }
+
+    Connection conectar() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

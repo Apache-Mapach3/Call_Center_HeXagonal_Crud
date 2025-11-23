@@ -22,7 +22,7 @@ import javax.swing.JOptionPane;
  * Implementa el patrón DTO para desacoplar totalmente la Vista del Dominio.
  * Realiza la conversión (Mapping) y aplica reglas de negocio.
  */
-public class AgenteService implements IAgenteService {
+public abstract class AgenteService implements IAgenteService {
 
     private final IAgenteRepository repositorio;
 
@@ -30,7 +30,7 @@ public class AgenteService implements IAgenteService {
         this.repositorio = repositorio;
     }
 
-    @Override
+  
     public void registrarAgente(AgenteDTO dto) {
         // Convertir DTO (Datos planos) a Entidad (Objeto de Negocio)
         Agente entidad = AgenteMapper.toEntity(dto);
@@ -42,6 +42,10 @@ public class AgenteService implements IAgenteService {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public List<AgenteDTO> listarAgentes() {
         // Obtener lista de Entidades del repositorio
@@ -54,9 +58,9 @@ public class AgenteService implements IAgenteService {
                 .collect(Collectors.toList());
     }
 
-    @Override
+  
     public void actualizarAgente(AgenteDTO dto) {
-        // Convertir
+      
         Agente entidad = AgenteMapper.toEntity(dto);
         
         // Validar ID
@@ -101,5 +105,15 @@ public class AgenteService implements IAgenteService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void registrarAgente(Agente agente) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void actualizarAgente(Agente agente) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

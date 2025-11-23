@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class Campania {
 
     
-    // 1. ATRIBUTOS (Nombres que usa el Adaptador)
+    
 
     private int id; // Corresponde a id_campania
     private String nombre; // Corresponde a nombre_campania
@@ -21,7 +21,7 @@ public class Campania {
     private String estado; 
 
     
-    // 2. CONSTRUCTORES
+   
    
     public Campania() {
         // Constructor vacío (necesario para mapeo JDBC)

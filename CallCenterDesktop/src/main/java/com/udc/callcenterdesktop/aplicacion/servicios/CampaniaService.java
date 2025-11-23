@@ -13,14 +13,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementación de la Lógica de Negocio.
- * Implementa el contrato ICampaniaService y utiliza el ICampaniaRepository
- * para las operaciones de persistencia.
- */
+
 public class CampaniaService implements ICampaniaService { // ⬅️ ¡IMPLEMENTACIÓN CLAVE!
     
-    // El servicio solo depende de la INTERFAZ (Puerto) del repositorio
+    
     private final ICampaniaRepository campaniaRepository;
 
     /**

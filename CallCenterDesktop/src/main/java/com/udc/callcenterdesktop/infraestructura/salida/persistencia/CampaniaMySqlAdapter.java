@@ -20,11 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Adaptador de Persistencia (Capa de Infraestructura).
- * Implementa el contrato ICampaniaRepository usando JDBC para interactuar con MySQL.
- */
-public class CampaniaMySqlAdapter implements ICampaniaRepository {
+
+public class CampaniaMySqlAdapter extends ICampaniaRepository {
 
 
     private static final String SQL_INSERT = 
@@ -42,23 +39,18 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
     private static final String SQL_DELETE = 
         "DELETE FROM campanias WHERE id_campania=?";
 
-    // ------------------------------------------
-    // 2. IMPLEMENTACIÓN: Mapeo de ResultSet a Entidad
-    // ------------------------------------------
+   
     
-    /**
-     * Helper para mapear una fila de ResultSet a un objeto Campania.
-     * @param rs El ResultSet actual.
-     * @return Objeto Campania mapeado.
-     * @throws SQLException Si ocurre un error de JDBC.
-     */
+    
+    
+  
     private Campania mapearCampania(ResultSet rs) throws SQLException {
         Campania campania = new Campania();
         campania.setId(rs.getInt("id_campania"));
         campania.setNombre(rs.getString("nombre_campania"));
         campania.setTipoCampania(rs.getString("tipo_campania"));
         
-        // Mapeo de fechas (DATE a LocalDate)
+ 
         Date fechaInicioSql = rs.getDate("fecha_inicio");
         campania.setFechaInicio(fechaInicioSql != null ? fechaInicioSql.toLocalDate() : null);
         
@@ -67,7 +59,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         
         campania.setSupervisoresCargo(rs.getString("supervisores_cargo"));
         campania.setDescripcionObjetivos(rs.getString("descripcion_objetivos"));
-        // Nota: Se asume que el estado es manejado por lógica o por defecto 'ACTIVA'
+      
         campania.setEstado("ACTIVA"); 
         
         return campania;
@@ -76,20 +68,20 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
     
     
     public Campania guardar(Campania campania) {
-        // Decide si es INSERT o UPDATE basado en si el ID existe (ID > 0)
+       
         boolean isUpdate = campania.getId() > 0;
         String sql = isUpdate ? SQL_UPDATE : SQL_INSERT;
         
         try (Connection conn = ConexionDB.obtenerConexion();
-             // RETURN_GENERATED_KEYS es necesario para obtener el ID si es un INSERT
+            
              PreparedStatement stmt = conn.prepareStatement(sql, isUpdate ? Statement.NO_GENERATED_KEYS : Statement.RETURN_GENERATED_KEYS)) {
 
-            // Mapeo de parámetros del objeto Campania al PreparedStatement
+         
             stmt.setString(1, campania.getNombre());
             stmt.setString(2, campania.getTipoCampania());
             stmt.setDate(3, Date.valueOf(campania.getFechaInicio()));
             
-            // Las fechas fin pueden ser NULL, se maneja la conversión de LocalDate a SQL Date
+         
             LocalDate fechaFin = campania.getFechaFin();
             if (fechaFin != null) {
                 stmt.setDate(4, Date.valueOf(fechaFin));
@@ -101,13 +93,13 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
             stmt.setString(6, campania.getDescripcionObjetivos());
 
             if (isUpdate) {
-                // Si es UPDATE, el ID va al final (posición 7)
+               
                 stmt.setInt(7, campania.getId());
             }
 
             stmt.executeUpdate();
 
-            // Si es INSERT, recuperamos el ID generado
+       
             if (!isUpdate) {
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -132,11 +124,11 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Si encuentra el registro, mapea y devuelve un Optional con la Campania
+                
                     return Optional.of(mapearCampania(rs));
                 }
             }
-            // Si no encuentra nada, devuelve un Optional vacío
+            
             return Optional.empty();
 
         } catch (SQLException e) {
@@ -150,10 +142,10 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_ALL);
-             ResultSet rs = stmt.executeQuery()) { // El ResultSet se cierra con el Statement y Connection gracias al try-with-resources
+             ResultSet rs = stmt.executeQuery()) { 
 
             while (rs.next()) {
-                // Itera sobre todos los resultados y mapea cada fila
+                
                 campanias.add(mapearCampania(rs));
             }
             return campanias;
@@ -170,10 +162,10 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
 
             stmt.setInt(1, id);
             
-            // executeUpdate devuelve el número de filas afectadas
+           
             int filasAfectadas = stmt.executeUpdate(); 
             
-            // Retorna true si al menos una fila fue eliminada
+          
             return filasAfectadas > 0; 
 
         } catch (SQLException e) {

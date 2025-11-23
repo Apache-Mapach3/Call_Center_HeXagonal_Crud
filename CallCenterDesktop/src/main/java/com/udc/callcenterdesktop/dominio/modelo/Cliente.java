@@ -18,7 +18,7 @@ import java.util.Objects;
 public class Cliente {
     
     private int id;
-    private String identificacion; // DNI, Cédula o RUC
+    private String identificacion;
     private String nombre;
     private String apellido;
     private String telefono;

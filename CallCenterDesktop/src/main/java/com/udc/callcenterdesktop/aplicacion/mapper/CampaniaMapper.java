@@ -20,19 +20,10 @@ public class CampaniaMapper {
     public Campania toEntity(CampaniaDTO dto) {
         // 🛑 CORRECCIÓN: Usar el constructor de 8 parámetros y asegurar que el ID sea INT
         // El DTO puede tener el ID como Long, por lo que usamos .intValue()
-        return new Campania(
-            dto.getId().intValue(), // CORRECCIÓN CLAVE
-            dto.getNombre(),
-            dto.getTipoCampania(),
-            dto.getFechaInicio(),
-            dto.getFechaFin(),
-            dto.getSupervisoresCargo(),
-            dto.getDescripcionObjetivos(),
-            dto.getEstado() // Nuevo parámetro 'estado'
-        );
-    }
+        
+    
 
-    // Método para convertir Entidad (Campania) a DTO
+   
     public CampaniaDTO toDTO(Campania entity) {
         CampaniaDTO dto = new CampaniaDTO();
         
