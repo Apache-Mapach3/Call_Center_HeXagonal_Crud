@@ -5,10 +5,6 @@
 package com.udc.callcenterdesktop.dominio.excepciones;
 
 /**
- *
- * @author Admin
- */
-/**
  * Excepción personalizada del Dominio.
  * Envuelve errores técnicos (SQL, Red) en un error de negocio entendible.
  * Hereda de RuntimeException para no ensuciar el código con 'throws' obligatorios.

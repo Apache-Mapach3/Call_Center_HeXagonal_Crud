@@ -4,10 +4,6 @@
  */
 package com.udc.callcenterdesktop.aplicacion.mapper;
 
-/**
- *
- * @author Admin
- */
 import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 

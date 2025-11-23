@@ -5,10 +5,6 @@
 package com.udc.callcenterdesktop.aplicacion.dto;
 
 /**
- *
- * @author Admin
- */
-/**
  * Data Transfer Object (DTO) para Agente.
  * Sirve para transportar datos desde la Vista hacia el Servicio
  * sin exponer la Entidad de Dominio directamente.

@@ -5,10 +5,6 @@
 package com.udc.callcenterdesktop.dominio.modelo;
 
 /**
- *
- * @author Admin
- */
-/**
  * Entidad que representa un Cliente dentro del dominio del negocio.
  * Esta clase es pura y no debe contener anotaciones de base de datos ni lógica de interfaz.
  */

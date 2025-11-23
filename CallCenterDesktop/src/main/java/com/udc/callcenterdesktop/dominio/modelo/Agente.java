@@ -9,12 +9,11 @@ package com.udc.callcenterdesktop.dominio.modelo;
  * @author Admin
  */
 /**
- * Representa a un empleado del Call Center (Entidad de Dominio).
- * Esta clase es un POJO (Plain Old Java Object) y no debe depender de frameworks.
+ * Entidad Agente (Núcleo).
+ * Representa al empleado del Call Center. Es un objeto puro (POJO).
  */
 public class Agente {
-
-    // Atributos privados (Encapsulamiento)
+    
     private Long idAgente;
     private String nombreCompleto;
     private String numeroEmpleado;
@@ -23,19 +22,9 @@ public class Agente {
     private String horarioTurno;
     private String nivelExperiencia;
 
-
-    // CONSTRUCTORES
-
-
-    /**
-     * Constructor vacío necesario para frameworks y creación flexible.
-     */
     public Agente() {
     }
 
-    /**
-     * Constructor completo para instanciar un agente con todos sus datos.
-     */
     public Agente(Long idAgente, String nombreCompleto, String numeroEmpleado, String telefonoContacto, String email, String horarioTurno, String nivelExperiencia) {
         this.idAgente = idAgente;
         this.nombreCompleto = nombreCompleto;
@@ -46,10 +35,7 @@ public class Agente {
         this.nivelExperiencia = nivelExperiencia;
     }
 
- 
-    // GETTERS Y SETTERS (Métodos de acceso)
- 
-
+    // Getters y Setters
     public Long getIdAgente() { return idAgente; }
     public void setIdAgente(Long idAgente) { this.idAgente = idAgente; }
 
