@@ -13,9 +13,11 @@ import java.util.List;
 
 public interface IAgenteRepository {
     
-    // Métodos para la Base de Datos
+
     void guardar(Agente agente);
     List<Agente> listarTodos();
     void actualizar(Agente agente);
     void eliminar(Long id);
+
+    public Object buscarPorId(int idAgente);
 }
