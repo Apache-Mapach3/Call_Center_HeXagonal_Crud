@@ -4,81 +4,65 @@
  */
 package com.udc.callcenterdesktop.aplicacion.servicios;
 
-
-import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
-import com.udc.callcenterdesktop.aplicacion.mapper.CampaniaMapper;
+import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO;
+import com.udc.callcenterdesktop.aplicacion.mapper.AgenteMapper;
 import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
-import com.udc.callcenterdesktop.dominio.modelo.Campania;
-import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService;
-import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
+import com.udc.callcenterdesktop.dominio.modelo.Agente;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService;
+import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementación de la Lógica de Negocio.
+ * Lógica de Negocio.
+ * Implementa las validaciones y coordina el flujo de datos.
  */
-public class CampaniaService implements ICampaniaService {
+public class AgenteService implements IAgenteService { // CORREGIDO: Ya no es abstract
 
-    private final ICampaniaRepository repositorio;
+    private final IAgenteRepository repositorio;
 
-    public CampaniaService(ICampaniaRepository repositorio) {
+    public AgenteService(IAgenteRepository repositorio) {
         this.repositorio = repositorio;
     }
 
     @Override
-    public void registrarCampania(CampaniaDTO dto) {
-        Campania entidad = CampaniaMapper.toEntity(dto);
+    public void registrarAgente(AgenteDTO dto) {
+        Agente entidad = AgenteMapper.toEntity(dto);
         validar(entidad);
         repositorio.guardar(entidad);
     }
 
     @Override
-    public List<CampaniaDTO> listarCampanias() {
+    public List<AgenteDTO> listarAgentes() {
         return repositorio.listarTodos().stream()
-                .map(CampaniaMapper::toDTO)
+                .map(AgenteMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void actualizarCampania(CampaniaDTO dto) {
-        if (dto.idCampania == null) throw new CallCenterException("ID requerido para actualizar.");
-        Campania entidad = CampaniaMapper.toEntity(dto);
+    public void actualizarAgente(AgenteDTO dto) {
+        // CORREGIDO: Mantenemos la validación del Main
+        if (dto.id == null) throw new CallCenterException("ID necesario para actualizar.");
+        
+        Agente entidad = AgenteMapper.toEntity(dto);
         validar(entidad);
         repositorio.actualizar(entidad);
     }
 
     @Override
-    public void eliminarCampania(Long id) {
+    public void eliminarAgente(Long id) {
         if (id == null) throw new CallCenterException("ID nulo.");
+        // NOTA: No ponemos JOptionPane aquí. La confirmación visual se hace en la Vista.
         repositorio.eliminar(id);
     }
     
-    private void validar(Campania c) {
-        if (c.getNombreCampania() == null || c.getNombreCampania().isEmpty()) {
-            throw new CallCenterException("El nombre de la campaña es obligatorio.");
+    // Validaciones de negocio usando Excepciones (Correcto)
+    private void validar(Agente a) {
+        if (a.getNombreCompleto() == null || a.getNombreCompleto().isEmpty()) {
+            throw new CallCenterException("El nombre es obligatorio.");
         }
-        if (c.getFechaFin() != null && c.getFechaInicio() != null && c.getFechaFin().isBefore(c.getFechaInicio())) {
-            throw new CallCenterException("La fecha fin no puede ser anterior a la de inicio.");
+        if (a.getEmail() == null || !a.getEmail().contains("@")) {
+            throw new CallCenterException("El email no es válido.");
         }
     }
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-

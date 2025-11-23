@@ -4,11 +4,6 @@
  */
 package com.udc.callcenterdesktop.aplicacion.mapper;
 
-/**
- *
- * @author camolano
- */
-
 import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 
@@ -33,20 +28,3 @@ public class CampaniaMapper {
         );
     }
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-

@@ -4,7 +4,6 @@
  */
 package com.udc.callcenterdesktop.infraestructura.salida.persistencia;
 
-
 import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
