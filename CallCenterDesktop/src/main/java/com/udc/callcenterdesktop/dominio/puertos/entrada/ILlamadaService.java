@@ -4,26 +4,13 @@
  */
 package com.udc.callcenterdesktop.dominio.puertos.entrada;
     
-    import com.udc.callcenterdesktop.aplicacion.dto.LlamadaDTO;
+import com.udc.callcenterdesktop.aplicacion.dto.LlamadaDTO;
 import java.util.List;
-import java.util.Optional;
 
 public interface ILlamadaService {
-
-   
-    LlamadaDTO crearOActualizarLlamada(LlamadaDTO llamadaDTO);
-
-    
-    Optional<LlamadaDTO> obtenerLlamadaPorId(int id);
-
-   
-    List<LlamadaDTO> obtenerTodasLlamadas();
-
-    
-    boolean eliminarLlamada(int id);
+    void registrarLlamada(LlamadaDTO dto);
+    List<LlamadaDTO> listarHistorial();
 }
-    
-    
     
     
     

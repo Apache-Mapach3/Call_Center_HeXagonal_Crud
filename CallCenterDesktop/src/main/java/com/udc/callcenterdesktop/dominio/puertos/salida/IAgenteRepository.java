@@ -12,12 +12,8 @@ import com.udc.callcenterdesktop.dominio.modelo.Agente;
 import java.util.List;
 
 public interface IAgenteRepository {
-    
-
     void guardar(Agente agente);
-    List<Agente> listarTodos();
+    List<Agente> listarTodos(); 
     void actualizar(Agente agente);
     void eliminar(Long id);
-
-    public Object buscarPorId(int idAgente);
 }

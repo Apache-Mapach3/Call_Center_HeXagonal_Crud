@@ -3,38 +3,62 @@
  */
 package com.udc.callcenterdesktop;
 
+// Importaciones de Servicios (Aplicación)
 import com.udc.callcenterdesktop.aplicacion.servicios.AgenteService;
-import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
-import com.udc.callcenterdesktop.infraestructura.entrada.vistas.FrmGestionAgentes;
+import com.udc.callcenterdesktop.aplicacion.servicios.CampaniaService;
+import com.udc.callcenterdesktop.aplicacion.servicios.ClienteService;
+import com.udc.callcenterdesktop.aplicacion.servicios.LlamadaService;
+
+// Importaciones de Interfaces (Puertos)
+import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.IClienteService;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.ILlamadaService;
+
+// Importaciones de Adaptadores (Infraestructura)
+import com.udc.callcenterdesktop.infraestructura.entrada.vistas.MenuPrincipal;
 import com.udc.callcenterdesktop.infraestructura.salida.persistencia.AgenteMySqlAdapter;
+import com.udc.callcenterdesktop.infraestructura.salida.persistencia.CampaniaMySqlAdapter;
+import com.udc.callcenterdesktop.infraestructura.salida.persistencia.ClienteMySqlAdapter;
+import com.udc.callcenterdesktop.infraestructura.salida.persistencia.LlamadaMySqlAdapter;
+
+// Importaciones de Utilidades de Java
+import javax.swing.UIManager;
 
 public class Main {
     public static void main(String[] args) {
         
-        // Configuración visual (Estilo Windows)
+        // Configuración Visual (Look & Feel estilo Windows)
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            System.err.println("No se pudo aplicar el tema visual.");
+        }
 
-        // -----------------------------------------------------------
-        // INYECCIÓN DE DEPENDENCIAS (Arquitectura Hexagonal)
-        // -----------------------------------------------------------
+ 
+        // INYECCIÓN DE DEPENDENCIAS (Wiring)
+     
 
-        // 1. Crear el Repositorio (Infraestructura - El que sabe SQL)
-        IAgenteRepository repositorio = new AgenteMySqlAdapter();
+        // Crear los Adaptadores (Repositorios que saben SQL)
+        AgenteMySqlAdapter repoAgentes = new AgenteMySqlAdapter();
+        CampaniaMySqlAdapter repoCampanias = new CampaniaMySqlAdapter();
+        ClienteMySqlAdapter repoClientes = new ClienteMySqlAdapter();
+        LlamadaMySqlAdapter repoLlamadas = new LlamadaMySqlAdapter();
 
-        // 2. Crear el Servicio (Aplicación - El cerebro del negocio)
-        AgenteService servicio = new AgenteService(repositorio);
+        // Crear los Servicios (Lógica que usa los repositorios)
+        IAgenteService serviceAgentes = new AgenteService(repoAgentes);
+        ICampaniaService serviceCampanias = new CampaniaService(repoCampanias);
+        IClienteService serviceClientes = new ClienteService(repoClientes);
+        ILlamadaService serviceLlamadas = new LlamadaService(repoLlamadas);
 
-        // 3. Crear la Ventana (Infraestructura - La cara visual)
-        // Le inyectamos el servicio para que funcione
+        // Iniciar la GUI (Inyectando los servicios al Menú Principal)
         java.awt.EventQueue.invokeLater(() -> {
-            new FrmGestionAgentes(servicio).setVisible(true);
+            new MenuPrincipal(serviceAgentes, serviceClientes, serviceCampanias, serviceLlamadas).setVisible(true);
         });
     }
 }
