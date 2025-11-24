@@ -8,178 +8,59 @@ package com.udc.callcenterdesktop.dominio.modelo;
  *
  * @author Admin
  */
-
-
 import java.time.LocalDateTime;
-import java.util.Objects;
-
-
 
 public class Llamada {
-    
-    private int idAgente;
-    private int idCliente;
 
-    private LocalDateTime horaInicio; 
-    private LocalDateTime horaFin;    
-    private int duracionSegundos;
+    private Long idLlamada;
+    private LocalDateTime fechaHora;
+    private Integer duracion;
+    private String detalleResultado;
+    private String observaciones;
 
+    // Relaciones (IDs)
+    private Long idAgente;
+    private Long idCampania;
+    private Long idCliente;
 
-
-
-private String resultado;     
-    private String notas;          
-    private String estado;
-    private int id;
-
-public Llamada() {
+    // Constructor Vacío
+    public Llamada() {
     }
 
-
-public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getIdAgente() {
-        return idAgente;
-    }
-
-    public void setIdAgente(int idAgente) {
+    // Constructor Completo (ESTE ES EL QUE BUSCA EL MAPPER)
+    public Llamada(Long idLlamada, LocalDateTime fechaHora, Integer duracion, String detalleResultado, String observaciones, Long idAgente, Long idCampania, Long idCliente) {
+        this.idLlamada = idLlamada;
+        this.fechaHora = fechaHora;
+        this.duracion = duracion;
+        this.detalleResultado = detalleResultado;
+        this.observaciones = observaciones;
         this.idAgente = idAgente;
-    }
-
-    public int getIdCliente() {
-        return idCliente;
-    }
-
-    public void setIdCliente(int idCliente) {
+        this.idCampania = idCampania;
         this.idCliente = idCliente;
     }
 
-    public LocalDateTime getHoraInicio() {
-        return horaInicio;
-    }
+    // GETTERS Y SETTERS (NECESARIOS PARA EL MAPPER)
+    public Long getIdLlamada() { return idLlamada; }
+    public void setIdLlamada(Long idLlamada) { this.idLlamada = idLlamada; }
 
-    public void setHoraInicio(LocalDateTime horaInicio) {
-        this.horaInicio = horaInicio;
-    }
+    public LocalDateTime getFechaHora() { return fechaHora; }
+    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
 
-    public LocalDateTime getHoraFin() {
-        return horaFin;
-    }
+    public Integer getDuracion() { return duracion; }
+    public void setDuracion(Integer duracion) { this.duracion = duracion; }
 
-    public void setHoraFin(LocalDateTime horaFin) {
-        this.horaFin = horaFin;
-    }
+    public String getDetalleResultado() { return detalleResultado; }
+    public void setDetalleResultado(String detalleResultado) { this.detalleResultado = detalleResultado; }
 
-    public int getDuracionSegundos() {
-        return duracionSegundos;
-    }
+    public String getObservaciones() { return observaciones; }
+    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
 
-    public void setDuracionSegundos(int duracionSegundos) {
-        this.duracionSegundos = duracionSegundos;
-    }
+    public Long getIdAgente() { return idAgente; }
+    public void setIdAgente(Long idAgente) { this.idAgente = idAgente; }
 
-    public String getResultado() {
-        return resultado;
-    }
+    public Long getIdCampania() { return idCampania; }
+    public void setIdCampania(Long idCampania) { this.idCampania = idCampania; }
 
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
-    }
-
-    public String getNotas() {
-        return notas;
-    }
-
-    public void setNotas(String notas) {
-        this.notas = notas;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-
-
-public String toString() {
-        return "Llamada{" +
-                "id=" + id +
-                ", idAgente=" + idAgente +
-                ", idCliente=" + idCliente +
-                ", horaInicio=" + horaInicio +
-                ", duracionSegundos=" + duracionSegundos +
-                ", estado='" + estado + '\'' +
-                '}';
-    }
-
-
-public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Llamada llamada = (Llamada) o;
-        return id == llamada.id;
-
-}
-public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    public void setIdLlamada(int aInt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setFechaHora(LocalDateTime toLocalDateTime) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setDuracion(int aInt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setDetalle(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setObservacion(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setIdCampania(int aInt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public int getIdLlamada() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public int getDuracion() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public String getDetalle() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public String getObservacion() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public int getIdCampania() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public LocalDateTime getFechaHora() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    
+    public Long getIdCliente() { return idCliente; }
+    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
 }

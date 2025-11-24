@@ -4,175 +4,133 @@
  */
 package com.udc.callcenterdesktop.infraestructura.entrada.vistas;
 
-import com.udc.callcenterdesktop.aplicacion.dto.LlamadaDTO;
-import com.udc.callcenterdesktop.aplicacion.dto.AgenteDTO; // Necesario para el ComboBox de Agentes
-import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO; // Necesario para el ComboBox de Campañas
-import com.udc.callcenterdesktop.aplicacion.dto.ClienteDTO; // Necesario para el ComboBox de Clientes
-import com.udc.callcenterdesktop.dominio.puertos.entrada.ILlamadaService;
-import com.udc.callcenterdesktop.dominio.puertos.entrada.IAgenteService; // Servicio de Agente
-import com.udc.callcenterdesktop.dominio.puertos.entrada.ICampaniaService; // Servicio de Campaña
-import com.udc.callcenterdesktop.dominio.puertos.entrada.IClienteService; // Servicio de Cliente
+import com.udc.callcenterdesktop.aplicacion.dto.*;
 import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
-
-import java.util.List;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import com.udc.callcenterdesktop.dominio.puertos.entrada.*;
+import java.awt.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
-/**
- * Vista: Formulario para el Registro de Interacciones de Llamada.
- * Esta vista inyecta tres servicios para manejar la data relacionada (Agente, Cliente, Campaña).
- */
 public class FrmRegistroLlamada extends JFrame {
 
-   
-    // 1. DEPENDENCIAS (Puertos de Entrada)
-
+    // Necesitamos 4 servicios para llenar los combos y registrar
     private final ILlamadaService llamadaService;
     private final IAgenteService agenteService;
-    private final ICampaniaService campaniaService;
     private final IClienteService clienteService;
+    private final ICampaniaService campaniaService;
 
- 
-    // 2. COMPONENTES VISUALES
-    
-    // Los JComboBox deben ser declarados como campos para poder llenarlos.
-    private JComboBox<String> cmbAgente; 
-    private JComboBox<String> cmbCliente; 
-    private JComboBox<String> cmbCampania;
-    // ... otros campos como txtDuracion, txtDetalle, etc.
+    private JComboBox<ItemCombo> cbAgente, cbCliente, cbCampania;
+    private JTextField txtDuracion;
+    private JTextArea txtDetalle, txtObservacion;
+    private JTable tablaHistorial;
+    private DefaultTableModel modelo;
 
-    /**
-     * Constructor con Inyección de Múltiples Dependencias.
-     */
-    public FrmRegistroLlamada(ILlamadaService llamadaService, 
-                              IAgenteService agenteService, 
-                              ICampaniaService campaniaService,
-                              IClienteService clienteService) {
-        
-        this.llamadaService = llamadaService;
-        this.agenteService = agenteService;
-        this.campaniaService = campaniaService;
-        this.clienteService = clienteService;
-        
-   
-        initComponentsPersonalizados(); 
-        
-        
-        cargarComboBoxes();
+    public FrmRegistroLlamada(ILlamadaService ls, IAgenteService as, IClienteService cs, ICampaniaService camps) {
+        this.llamadaService = ls;
+        this.agenteService = as;
+        this.clienteService = cs;
+        this.campaniaService = camps;
+        initUI();
+        cargarCombos();
+        cargarTabla();
     }
-    
-   
-    // 3. LÓGICA DE CARGA DE DATOS PARA COMBOBOXES
-    
 
-    private void initComponentsPersonalizados() {
-        // Inicializa tus componentes, incluyendo:
-        // cmbAgente = new JComboBox<>();
-        // cmbCliente = new JComboBox<>();
-        // cmbCampania = new JComboBox<>();
-        // ...
-        
-        // Ejemplo de inicialización de JComboBox (DEBES ADAPTAR ESTO A TU DISEÑO)
-        cmbAgente = new JComboBox<>(); 
-        cmbCliente = new JComboBox<>(); 
-        cmbCampania = new JComboBox<>(); 
-        
-        // Inicializar el Layout, tamaño, etc.
-        // ...
+    private void initUI() {
+        setTitle("Registro de Llamadas");
+        setSize(1000, 700);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        JPanel pHeader = new JPanel(); pHeader.setBackground(new Color(102, 51, 153));
+        JLabel lblTitulo = new JLabel("REGISTRO Y CONTROL DE LLAMADAS");
+        lblTitulo.setForeground(Color.WHITE); lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        pHeader.add(lblTitulo); add(pHeader, BorderLayout.NORTH);
+
+        JPanel pForm = new JPanel(new GridLayout(3, 4, 15, 15));
+        pForm.setBorder(BorderFactory.createTitledBorder("Detalles"));
+
+        cbAgente = new JComboBox<>(); cbCliente = new JComboBox<>();
+        cbCampania = new JComboBox<>(); txtDuracion = new JTextField();
+        txtDetalle = new JTextArea(3, 20); txtObservacion = new JTextArea(3, 20);
+
+        pForm.add(new JLabel("Agente:")); pForm.add(cbAgente);
+        pForm.add(new JLabel("Cliente:")); pForm.add(cbCliente);
+        pForm.add(new JLabel("Campaña:")); pForm.add(cbCampania);
+        pForm.add(new JLabel("Duración (seg):")); pForm.add(txtDuracion);
+        pForm.add(new JLabel("Resultado:")); pForm.add(new JScrollPane(txtDetalle));
+        pForm.add(new JLabel("Observaciones:")); pForm.add(new JScrollPane(txtObservacion));
+
+        JButton btnGuardar = new JButton("REGISTRAR LLAMADA");
+        btnGuardar.setBackground(new Color(102, 51, 153)); btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.addActionListener(e -> guardar());
+
+        JPanel pC = new JPanel(new BorderLayout()); pC.add(pForm, BorderLayout.CENTER); pC.add(btnGuardar, BorderLayout.SOUTH);
+        add(pC, BorderLayout.CENTER);
+
+        modelo = new DefaultTableModel(null, new String[]{"ID", "Fecha", "Agente", "Cliente", "Campaña", "Resultado"});
+        tablaHistorial = new JTable(modelo);
+        add(new JScrollPane(tablaHistorial), BorderLayout.SOUTH);
     }
-    
-    /**
-     * Carga los datos de Agentes, Clientes y Campañas en los JComboBoxes.
-     * Esto asume que los servicios tienen un método para obtener la lista de DTOs.
-     */
-    private void cargarComboBoxes() {
+
+    private void cargarCombos() {
         try {
-            // 1. Cargar Agentes
-            List<AgenteDTO> agentes = agenteService.obtenerTodosAgentes(); // Asume este método existe
-            cmbAgente.addItem("Seleccione Agente");
-            for (AgenteDTO agente : agentes) {
-                // Almacenamos el nombre, pero usaremos el ID para el mapeo
-                cmbAgente.addItem(agente.getId() + " - " + agente.getNombre()); 
-            }
-            
-            // 2. Cargar Clientes
-            List<ClienteDTO> clientes = clienteService.obtenerTodosClientes(); // Asume este método existe
-            cmbCliente.addItem("Seleccione Cliente");
-            for (ClienteDTO cliente : clientes) {
-                cmbCliente.addItem(cliente.getId() + " - " + cliente.getNombre());
+            cbAgente.removeAllItems();
+            for (AgenteDTO a : agenteService.listarAgentes()) cbAgente.addItem(new ItemCombo(a.id, a.nombre));
+
+            cbCliente.removeAllItems();
+            if (clienteService != null) { // Validación por si el servicio aún no está inyectado
+                 for (ClienteDTO c : clienteService.listarClientes()) cbCliente.addItem(new ItemCombo(c.idCliente, c.nombreCompleto));
             }
 
-            // 3. Cargar Campañas
-            List<CampaniaDTO> campanias = campaniaService.obtenerTodasCampanias(); // Ya existe
-            cmbCampania.addItem("Seleccione Campaña");
-            for (CampaniaDTO campania : campanias) {
-                cmbCampania.addItem(campania.getId() + " - " + campania.getNombre());
-            }
-
-        } catch (CallCenterException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar datos base: " + e.getMessage(), "Error de Servicio", JOptionPane.ERROR_MESSAGE);
+            cbCampania.removeAllItems();
+            for (CampaniaDTO c : campaniaService.listarCampanias()) cbCampania.addItem(new ItemCombo(c.idCampania, c.nombreCampania));
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error de sistema al cargar listas: " + e.getMessage(), "Error Fatal", JOptionPane.ERROR_MESSAGE);
+            // Ignorar errores silenciosos si faltan servicios al inicio
         }
     }
-    
-    // 
-    // 4. LÓGICA DE REGISTRO (Guardar)
-    // 
 
-    /**
-     * Manejador del botón Guardar (debes implementarlo en tu diseño).
-     */
-    private void btnRegistrarLlamadaActionPerformed(java.awt.event.ActionEvent evt) {
+    private void cargarTabla() {
+        modelo.setRowCount(0);
+        List<LlamadaDTO> lista = llamadaService.listarHistorial();
+        for (LlamadaDTO l : lista) {
+            modelo.addRow(new Object[]{l.idLlamada, l.fechaHora, l.nombreAgente, l.nombreCliente, l.nombreCampania, l.detalleResultado});
+        }
+    }
+
+    private void guardar() {
         try {
-            LlamadaDTO dto = crearLlamadaDTODesdeFormulario();
-            
-            if (dto != null) {
-                llamadaService.crearOActualizarLlamada(dto);
-                JOptionPane.showMessageDialog(this, "Llamada registrada con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                // limpiarCampos(); 
-            }
-        } catch (CallCenterException e) {
-            JOptionPane.showMessageDialog(this, "Error de registro: " + e.getMessage(), "Error de Negocio", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al intentar guardar la llamada: " + e.getMessage(), "Error de Sistema", JOptionPane.ERROR_MESSAGE);
+            LlamadaDTO dto = new LlamadaDTO();
+            dto.fechaHora = LocalDateTime.now();
+            dto.duracion = Integer.parseInt(txtDuracion.getText());
+            dto.detalleResultado = txtDetalle.getText();
+            dto.observaciones = txtObservacion.getText();
+
+            ItemCombo ag = (ItemCombo) cbAgente.getSelectedItem();
+            ItemCombo cl = (ItemCombo) cbCliente.getSelectedItem();
+            ItemCombo cp = (ItemCombo) cbCampania.getSelectedItem();
+
+            if (ag != null) dto.idAgente = ag.id;
+            if (cl != null) dto.idCliente = cl.id;
+            if (cp != null) dto.idCampania = cp.id;
+
+            llamadaService.registrarLlamada(dto);
+            JOptionPane.showMessageDialog(this, "Llamada registrada.");
+            cargarTabla();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "La duración debe ser un número.");
+        } catch (CallCenterException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-    /**
-     * Método auxiliar para extraer los datos del formulario a un DTO.
-     */
-    private LlamadaDTO crearLlamadaDTODesdeFormulario() {
-        
-     
-        String agenteSeleccionado = (String) cmbAgente.getSelectedItem();
-        String clienteSeleccionado = (String) cmbCliente.getSelectedItem();
-        String campaniaSeleccionada = (String) cmbCampania.getSelectedItem();
-
-        if (agenteSeleccionado == null || agenteSeleccionado.startsWith("Seleccione")) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar un Agente.", "Validación", JOptionPane.WARNING_MESSAGE);
-            return null;
-        }
-
-        
-        Long idAgente = Long.parseLong(agenteSeleccionado.split(" - ")[0]);
-        Long idCliente = Long.parseLong(clienteSeleccionado.split(" - ")[0]);
-        Long idCampania = Long.parseLong(campaniaSeleccionada.split(" - ")[0]);
-
-        LlamadaDTO dto = new LlamadaDTO();
-        dto.setIdLlamada(0L); 
-        dto.setFechaHora(LocalDateTime.now()); 
-        
-        
-        dto.setIdAgente(idAgente);
-        dto.setIdCliente(idCliente);
-        dto.setIdCampania(idCampania);
-        
-        
-        return dto;
+    private class ItemCombo {
+        Long id; String texto;
+        public ItemCombo(Long id, String t) { this.id = id; this.texto = t; }
+        public String toString() { return texto; }
     }
-    
-   
 }

@@ -13,37 +13,36 @@ import com.udc.callcenterdesktop.dominio.modelo.Llamada;
 
 public class LlamadaMapper {
 
-    /** Convierte Entidad a DTO (de Dominio a Aplicación/Vista) */
-    public LlamadaDTO toDTO(Llamada entity) {
-        LlamadaDTO dto = new LlamadaDTO();
-        dto.setIdLlamada((long) entity.getIdLlamada());
-        dto.setFechaHora(entity.getFechaHora());
-        dto.setDuracion(entity.getDuracion());
-        dto.setDetalle(entity.getDetalle());
-        dto.setObservacion(entity.getObservacion());
-        
-        // IDs de las relaciones (solo si no se conocen los nombres en la Entidad)
-        dto.setIdAgente((long) entity.getIdAgente());
-        dto.setIdCampania((long) entity.getIdCampania());
-        dto.setIdCliente((long) entity.getIdCliente());
-        
-        // Los campos 'nombreAgente', 'nombreCampania', 'nombreCliente'
-        // deben ser llenados en el LlamadaService (usando INNER JOIN o búsquedas adicionales)
-        
-        return dto;
+    // USAMOS CAMPOS PÚBLICOS
+    public static Llamada toEntity(LlamadaDTO dto) {
+        if (dto == null) return null;
+        return new Llamada(
+            dto.idLlamada,
+            dto.fechaHora,
+            dto.duracion,
+            dto.detalleResultado,
+            dto.observaciones,
+            dto.idAgente,
+            dto.idCampania,
+            dto.idCliente
+        );
     }
 
-    /** Convierte DTO a Entidad (de Aplicación/Vista a Dominio/Persistencia) */
-    public Llamada toEntity(LlamadaDTO dto) {
-        Llamada entity = new Llamada();
-        entity.setIdLlamada(dto.getIdLlamada() != null ? dto.getIdLlamada().intValue() : 0);
-        entity.setFechaHora(dto.getFechaHora());
-        entity.setDuracion(dto.getDuracion());
-        entity.setDetalle(dto.getDetalle());
-        entity.setObservacion(dto.getObservacion());
-
+    public static LlamadaDTO toDTO(Llamada entity) {
+        if (entity == null) return null;
         
+        LlamadaDTO dto = new LlamadaDTO();
+        // Asignación directa a campos públicos (sin set...)
+        dto.idLlamada = entity.getIdLlamada();
+        dto.fechaHora = entity.getFechaHora();
+        dto.duracion = entity.getDuracion();
+        dto.detalleResultado = entity.getDetalleResultado();
+        dto.observaciones = entity.getObservaciones();
         
-        return entity;
+        dto.idAgente = entity.getIdAgente();
+        dto.idCampania = entity.getIdCampania();
+        dto.idCliente = entity.getIdCliente();
+        
+        return dto;
     }
 }

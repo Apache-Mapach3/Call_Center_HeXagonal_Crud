@@ -11,9 +11,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adaptador Técnico para persistencia en MySQL.
- */
 public class CampaniaMySqlAdapter implements ICampaniaRepository {
 
     private static final String INSERT_SQL = "INSERT INTO campanias (nombre_campania, tipo_campania, fecha_inicio, fecha_fin, supervisores_cargo, descripcion_objetivos) VALUES (?, ?, ?, ?, ?, ?)";
@@ -26,7 +23,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
             configurarStatement(stmt, c);
             stmt.executeUpdate();
-        } catch (SQLException e) { throw new CallCenterException("Error al guardar campaña", e); }
+        } catch (SQLException e) { throw new CallCenterException("Error BD al guardar campaña", e); }
     }
 
     @Override
@@ -41,7 +38,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
                 ));
             }
             return lista;
-        } catch (SQLException e) { throw new CallCenterException("Error al listar campañas", e); }
+        } catch (SQLException e) { throw new CallCenterException("Error BD al listar campañas", e); }
     }
 
     @Override
@@ -50,7 +47,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
             configurarStatement(stmt, c);
             stmt.setLong(7, c.getIdCampania());
             stmt.executeUpdate();
-        } catch (SQLException e) { throw new CallCenterException("Error al actualizar campaña", e); }
+        } catch (SQLException e) { throw new CallCenterException("Error BD al actualizar campaña", e); }
     }
 
     @Override
@@ -58,7 +55,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(DELETE_SQL)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
-        } catch (SQLException e) { throw new CallCenterException("Error al eliminar campaña", e); }
+        } catch (SQLException e) { throw new CallCenterException("Error BD al eliminar campaña", e); }
     }
 
     private void configurarStatement(PreparedStatement stmt, Campania c) throws SQLException {

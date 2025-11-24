@@ -6,7 +6,10 @@ package com.udc.callcenterdesktop.dominio.puertos.entrada;
 
 import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
 import java.util.List;
-
+/**
+ *
+ * @author camolano
+ */
 /**
  * Puerto de Entrada (Input Port).
  * Define qué operaciones de negocio ofrece el sistema.

@@ -6,83 +6,47 @@ package com.udc.callcenterdesktop.aplicacion.servicios;
 
 import com.udc.callcenterdesktop.aplicacion.dto.LlamadaDTO;
 import com.udc.callcenterdesktop.aplicacion.mapper.LlamadaMapper;
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 import com.udc.callcenterdesktop.dominio.modelo.Llamada;
 import com.udc.callcenterdesktop.dominio.puertos.entrada.ILlamadaService;
-import com.udc.callcenterdesktop.dominio.puertos.salida.IAgenteRepository;
-import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
-import com.udc.callcenterdesktop.dominio.puertos.salida.IClienteRepository;
 import com.udc.callcenterdesktop.dominio.puertos.salida.ILlamadaRepository;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 
+/**
+ * Lógica de Negocio para el registro de llamadas.
+ * Valida las reglas y coordina la persistencia.
+ */
 public class LlamadaService implements ILlamadaService {
 
-    
-    private final ILlamadaRepository llamadaRepository;
-    private final IAgenteRepository agenteRepository;
-    private final ICampaniaRepository campaniaRepository;
-    private final IClienteRepository clienteRepository;
-    private final LlamadaMapper llamadaMapper = new LlamadaMapper();
+    private final ILlamadaRepository repositorio;
 
-    
-    public LlamadaService(ILlamadaRepository llamadaRepository, 
-                          IAgenteRepository agenteRepository, 
-                          ICampaniaRepository campaniaRepository, 
-                          IClienteRepository clienteRepository) {
-        this.llamadaRepository = llamadaRepository;
-        this.agenteRepository = agenteRepository;
-        this.campaniaRepository = campaniaRepository;
-        this.clienteRepository = clienteRepository;
+    public LlamadaService(ILlamadaRepository repositorio) {
+        this.repositorio = repositorio;
     }
 
-    
-    private LlamadaDTO enriquecerLlamadaDTO(Llamada llamada) {
-        LlamadaDTO dto = llamadaMapper.toDTO(llamada);
+    @Override
+    public void registrarLlamada(LlamadaDTO dto) {
+        // Validaciones de Integridad
+        if (dto.idAgente == null || dto.idCliente == null || dto.idCampania == null) {
+            throw new CallCenterException("Error: Debe seleccionar un Agente, un Cliente y una Campaña válidos.");
+        }
         
-        
- 
-       
-        campaniaRepository.buscarPorId(llamada.getIdCampania())
-            .ifPresent(campania -> dto.setNombreCampania(campania.getNombre()));
-        
-        
-        clienteRepository.buscarPorId(llamada.getIdCliente())
-            .ifPresent(cliente -> dto.setNombreCliente(cliente.getNombre()));
+        // Validaciones de Negocio
+        if (dto.duracion == null || dto.duracion <= 0) {
+            throw new CallCenterException("La duración de la llamada debe ser mayor a 0 segundos.");
+        }
+        if (dto.detalleResultado == null || dto.detalleResultado.trim().isEmpty()) {
+            throw new CallCenterException("El detalle del resultado es obligatorio.");
+        }
 
-        return dto;
+        // Conversión y Guardado
+        Llamada entidad = LlamadaMapper.toEntity(dto);
+        repositorio.registrar(entidad);
     }
 
-
-    public LlamadaDTO crearOActualizarLlamada(LlamadaDTO llamadaDTO) {
-      
-        
-        Llamada llamada = llamadaMapper.toEntity(llamadaDTO);
-        Llamada guardada = llamadaRepository.guardar(llamada);
-        
-        return enriquecerLlamadaDTO(guardada);
-    }
-
-
-    public Optional<LlamadaDTO> obtenerLlamadaPorId(int id) {
-        return llamadaRepository.buscarPorId(id)
-            .map(this::enriquecerLlamadaDTO);
-    }
-
-   
-    public List<LlamadaDTO> obtenerTodasLlamadas() {
-        
-        List<Llamada> llamadas = llamadaRepository.buscarTodas();
-        
-       
-        return llamadas.stream()
-            .map(this::enriquecerLlamadaDTO)
-            .collect(Collectors.toList());
-    }
-
-
-    public boolean eliminarLlamada(int id) {
-        return llamadaRepository.eliminarPorId(id);
+    @Override
+    public List<LlamadaDTO> listarHistorial() {
+        // Usa el método optimizado del repositorio que ya trae los nombres (JOINs)
+        return repositorio.listarLlamadasConNombres();
     }
 }

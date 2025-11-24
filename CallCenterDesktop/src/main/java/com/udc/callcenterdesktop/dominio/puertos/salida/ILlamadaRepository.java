@@ -4,21 +4,15 @@
  */
 package com.udc.callcenterdesktop.dominio.puertos.salida;
 
+import com.udc.callcenterdesktop.aplicacion.dto.LlamadaDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Llamada;
 import java.util.List;
-import java.util.Optional;
 
 public interface ILlamadaRepository {
-
     
-    Llamada guardar(Llamada llamada);
-
+    // Método para guardar
+    void registrar(Llamada llamada);
     
-    Optional<Llamada> buscarPorId(int id);
-
-    
-    List<Llamada> buscarTodas();
-
-    
-    boolean eliminarPorId(int id);
+    // Método especial que devuelve DTOs con nombres
+    List<LlamadaDTO> listarLlamadasConNombres();
 }
