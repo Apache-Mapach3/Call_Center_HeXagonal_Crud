@@ -38,7 +38,7 @@ public class FrmGestionAgentes extends JFrame {
 
     private void initUI() {
         setTitle("Gestión de Agentes");
-        setSize(850, 600);
+        setSize(950, 700);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -53,7 +53,7 @@ public class FrmGestionAgentes extends JFrame {
         add(pHeader, BorderLayout.NORTH);
 
         // Formulario
-        JPanel pForm = new JPanel(new GridLayout(3, 4, 10, 10));
+        JPanel pForm = new JPanel(new GridLayout(3, 4, 20, 30));
         pForm.setBorder(BorderFactory.createTitledBorder("Datos del Agente"));
 
         txtIdOculto = new JTextField(); txtIdOculto.setVisible(false);

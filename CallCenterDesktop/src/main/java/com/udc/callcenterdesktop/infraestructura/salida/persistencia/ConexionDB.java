@@ -16,25 +16,32 @@ import javax.swing.JOptionPane;
 /**
  * Clase utilitaria para gestionar la conexión JDBC a MySQL.
  * Configurada para funcionar con Laragon/XAMPP localmente.
+ * Implementa el patrón Singleton (conexión estática) para eficiencia.
  */
 public class ConexionDB {
 
-   
-    private static final String URL = "jdbc:mysql://localhost:3306/call_center_db?serverTimezone=UTC";
+    // URL de Conexión
+    // El parámetro serverTimezone=UTC evita errores de zona horaria en versiones nuevas de MySQL
+    private static final String URL = "jdbc:mysql://localhost:3306/callcenter_db?serverTimezone=UTC";
+    
+    // Credenciales (Usuario root y clave vacía por defecto en Laragon)
     private static final String USER = "root";
-    private static final String PASSWORD = ""; // Vacío para Laragon
+    private static final String PASSWORD = ""; 
 
-   
+    /**
+     * Intenta establecer conexión con la base de datos.
+     * @return Objeto Connection activo o null si falla.
+     */
     public static Connection obtenerConexion() {
         Connection conexion = null;
         try {
-          
+            // Cargar el Driver en memoria 
             Class.forName("com.mysql.cj.jdbc.Driver");
             
-       
+            // Establecer el puente
             conexion = DriverManager.getConnection(URL, USER, PASSWORD);
             
-           
+            // Log de depuración (Solo para consola de desarrollo)
             System.out.println("[ConexionDB] Conexión establecida con MySQL.");
             
         } catch (ClassNotFoundException e) {
@@ -42,12 +49,9 @@ public class ConexionDB {
             e.printStackTrace();
         } catch (SQLException e) {
             System.err.println("Error SQL: No se pudo conectar a la BD.");
+            // Alerta visual en caso de fallo crítico
             JOptionPane.showMessageDialog(null, "Error de conexión a BD: " + e.getMessage());
         }
         return conexion;
-    }
-
-    Connection conectar() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
