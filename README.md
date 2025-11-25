@@ -6,30 +6,30 @@ Sistema de escritorio desarrollado en **Java** para la administración integral 
 
 El sistema permite gestionar los cuatro pilares de la operación:
 
-* ** Gestión de Agentes:** Registro, actualización y control de empleados, turnos y niveles de experiencia.
-* ** Gestión de Clientes:** Base de datos de clientes con información de contacto detallada.
-* ** Gestión de Campañas:** Administración de estrategias de marketing Ventas, Soporte, Encuestas con control de fechas.
-* ** Registro de Llamadas:** Módulo transaccional que vincula un Agente, un Cliente y una Campaña para registrar el resultado de la interacción y su duración.
+*  Gestión de Agentes: Registro, actualización y control de empleados, turnos y niveles de experiencia.
+*  Gestión de Clientes: Base de datos de clientes con información de contacto detallada.
+*  Gestión de Campañas: Administración de estrategias de marketing Ventas, Soporte, Encuestas con control de fechas.
+*  Registro de Llamadas: Módulo transaccional que vincula un Agente, un Cliente y una Campaña para registrar el resultado de la interacción y su duración.
 
 ## Arquitectura de Software
 
 El proyecto sigue estrictamente la **Arquitectura Hexagonal**:
 
-* **Dominio:** Entidades puras y Excepciones de negocio. Sin dependencias externas.
-* **Puertos:** `input-ports` y `output-ports` que definen los contratos de comunicación.
-* **Aplicación:** Implementación de casos de uso, DTOs y Mappers.
-* **Infraestructura:**
-    * **Entrada:** Interfaz Gráfica java Swing.
-    * **Salida:** Adaptadores de persistencia MySQL con JDBC.
+* Dominio: Entidades puras y Excepciones de negocio. Sin dependencias externas.
+* Puertos: `input-ports` y `output-ports` que definen los contratos de comunicación.
+* Aplicación: Implementación de casos de uso, DTOs y Mappers.
+* Infraestructura:
+    * Entrada: Interfaz Gráfica java Swing.
+    * Salida: Adaptadores de persistencia MySQL con JDBC.
 
 ##  Tecnologías Utilizadas
 
-* **Lenguaje:** Java JDK 17+.
-* **Interfaz Gráfica:** Java Swing.
-* **Base de Datos:** MySQL 8.0 Heidi.
-* **Gestión de Dependencias:** Apache Maven.
-* **Persistencia:** JDBC mysql-connector-j.
-* **IDE Recomendado:** Apache NetBeans.
+* Lenguaje: Java JDK 17+.
+* Interfaz Gráfica: Java Swing.
+* Base de Datos: MySQL 8.0 Heidi.
+* Gestión de Dependencias: Apache Maven.
+* Persistencia: JDBC mysql-connector-j.
+* IDE Recomendado: Apache NetBeans.
 
 ---
 
