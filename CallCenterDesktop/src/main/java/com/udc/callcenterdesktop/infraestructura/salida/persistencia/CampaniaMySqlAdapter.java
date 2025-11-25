@@ -8,6 +8,7 @@ import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 import com.udc.callcenterdesktop.dominio.puertos.salida.ICampaniaRepository;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,14 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         try (Connection conn = ConexionDB.obtenerConexion(); PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SQL); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 lista.add(new Campania(
-                    rs.getLong("id_campania"), rs.getString("nombre_campania"), rs.getString("tipo_campania"),
-                    rs.getDate("fecha_inicio").toLocalDate(), rs.getDate("fecha_fin").toLocalDate(),
-                    rs.getString("supervisores_cargo"), rs.getString("descripcion_objetivos")
+                    rs.getLong("id_campania"), 
+                    rs.getString("nombre_campania"), 
+                    rs.getString("tipo_campania"),
+                    // CORRECCIÓN - método seguro para fechas
+                    obtenerFecha(rs, "fecha_inicio"), 
+                    obtenerFecha(rs, "fecha_fin"),
+                    rs.getString("supervisores_cargo"), 
+                    rs.getString("descripcion_objetivos")
                 ));
             }
             return lista;
@@ -58,12 +64,30 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         } catch (SQLException e) { throw new CallCenterException("Error BD al eliminar campaña", e); }
     }
 
+    // MÉTODOS AUXILIARES
+
     private void configurarStatement(PreparedStatement stmt, Campania c) throws SQLException {
         stmt.setString(1, c.getNombreCampania());
         stmt.setString(2, c.getTipoCampania());
-        stmt.setDate(3, Date.valueOf(c.getFechaInicio()));
-        stmt.setDate(4, Date.valueOf(c.getFechaFin()));
+        
+        // Manejo seguro de Fecha Inicio
+        if (c.getFechaInicio() != null) stmt.setDate(3, Date.valueOf(c.getFechaInicio()));
+        else stmt.setNull(3, Types.DATE);
+
+        // Manejo seguro de Fecha Fin
+        if (c.getFechaFin() != null) stmt.setDate(4, Date.valueOf(c.getFechaFin()));
+        else stmt.setNull(4, Types.DATE);
+
         stmt.setString(5, c.getSupervisoresCargo());
         stmt.setString(6, c.getDescripcionObjetivos());
+    }
+
+    // Método para convertir java.sql.Date en java.time.LocalDate sin explotar por NULLs
+    private LocalDate obtenerFecha(ResultSet rs, String columna) throws SQLException {
+        Date fechaSql = rs.getDate(columna);
+        if (fechaSql != null) {
+            return fechaSql.toLocalDate();
+        }
+        return null; // Si es null en BD devolvemos null en Java
     }
 }

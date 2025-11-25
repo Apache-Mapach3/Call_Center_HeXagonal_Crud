@@ -8,12 +8,19 @@ package com.udc.callcenterdesktop.infraestructura.salida.persistencia;
  *
  * @author Admin
  */
-import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
-import com.udc.callcenterdesktop.dominio.modelo.Cliente;
-import com.udc.callcenterdesktop.dominio.puertos.salida.IClienteRepository;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+// Paquetes para Listas
 import java.util.ArrayList;
 import java.util.List;
+
+// Paquetes del Dominio - Arquitectura)
+import com.udc.callcenterdesktop.dominio.modelo.Cliente;
+import com.udc.callcenterdesktop.dominio.puertos.salida.IClienteRepository;
+import com.udc.callcenterdesktop.dominio.excepciones.CallCenterException;
 
 /**
  * Adaptador para base de datos MySQL.
