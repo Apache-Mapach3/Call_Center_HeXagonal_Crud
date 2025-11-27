@@ -7,6 +7,7 @@ com\udc\callcenterdesktop\aplicacion\mapper\LlamadaMapper.class
 com\udc\callcenterdesktop\dominio\puertos\salida\IClienteRepository.class
 com\udc\callcenterdesktop\infraestructura\salida\persistencia\ClienteMySqlAdapter.class
 com\udc\callcenterdesktop\infraestructura\salida\persistencia\LlamadaMySqlAdapter.class
+com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmRegistroLlamada$1.class
 com\udc\callcenterdesktop\aplicacion\mapper\ClienteMapper.class
 com\udc\callcenterdesktop\aplicacion\servicios\AgenteService.class
 com\udc\callcenterdesktop\infraestructura\salida\persistencia\AgenteMySqlAdapter.class
@@ -32,6 +33,7 @@ com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmRegistroLlamada$Item
 com\udc\callcenterdesktop\infraestructura\salida\persistencia\CampaniaMySqlAdapter.class
 com\udc\callcenterdesktop\dominio\puertos\entrada\ICampaniaService.class
 com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmGestionAgentes$2.class
+com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmGestionCampanias$2.class
 com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmRegistroLlamada.class
 com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmGestionAgentes$1.class
 com\udc\callcenterdesktop\dominio\modelo\Agente.class

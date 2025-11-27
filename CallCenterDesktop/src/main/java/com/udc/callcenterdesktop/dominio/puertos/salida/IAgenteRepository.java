@@ -6,7 +6,7 @@ package com.udc.callcenterdesktop.dominio.puertos.salida;
 
 /**
  *
- * @author Admin
+ * @author Jose
  */
 import com.udc.callcenterdesktop.dominio.modelo.Agente;
 import java.util.List;
