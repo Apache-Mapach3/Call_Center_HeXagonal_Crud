@@ -8,27 +8,62 @@ import com.udc.callcenterdesktop.aplicacion.dto.CampaniaDTO;
 import com.udc.callcenterdesktop.dominio.modelo.Campania;
 
 /**
- * Clase utilitaria para la conversión de datos (Mapping) del módulo de Campañas.
+ * Mapper para conversiones entre Campaña (Entidad) y CampañaDTO.
+ * 
+ * <p>Gestiona la transformación de datos relacionados con campañas,
+ * incluyendo el manejo correcto de fechas LocalDate.</p>
+ * 
+ * @author Carlos
+ * @version 2.0
+ * @since 2025
  */
 public class CampaniaMapper {
 
-    // De DTO (Vista) a Entidad (Dominio)
-    public static Campania toEntity(CampaniaDTO dto) {
-        if (dto == null) return null;
-        return new Campania(
-            dto.idCampania,
-            dto.nombreCampania,
-            dto.tipoCampania,
-            dto.fechaInicio,
-            dto.fechaFin,
-            dto.supervisoresCargo,
-            dto.descripcionObjetivos
+    /**
+     * Constructor privado para evitar instanciación.
+     */
+    private CampaniaMapper() {
+        throw new UnsupportedOperationException(
+            "Esta es una clase utilitaria y no debe ser instanciada"
         );
     }
 
-    // De Entidad (Dominio) a DTO (Vista)
+    /**
+     * Convierte un DTO a una Entidad de Dominio.
+     * 
+     * <p>Maneja correctamente las fechas LocalDate para evitar
+     * problemas de zona horaria y formato.</p>
+     * 
+     * @param dto objeto de transferencia de datos
+     * @return entidad de dominio, o null si el DTO es null
+     */
+    public static Campania toEntity(CampaniaDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+        
+        return new Campania(
+            dto.getIdCampania(),
+            dto.getNombreCampania(),
+            dto.getTipoCampania(),
+            dto.getFechaInicio(),
+            dto.getFechaFin(),
+            dto.getSupervisoresCargo(),
+            dto.getDescripcionObjetivos()
+        );
+    }
+
+    /**
+     * Convierte una Entidad de Dominio a un DTO.
+     * 
+     * @param entity entidad de dominio
+     * @return DTO correspondiente, o null si la entidad es null
+     */
     public static CampaniaDTO toDTO(Campania entity) {
-        if (entity == null) return null;
+        if (entity == null) {
+            return null;
+        }
+        
         return new CampaniaDTO(
             entity.getIdCampania(),
             entity.getNombreCampania(),
