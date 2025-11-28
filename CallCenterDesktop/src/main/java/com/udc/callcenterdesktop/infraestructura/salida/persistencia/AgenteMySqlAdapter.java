@@ -13,56 +13,53 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Adaptador de persistencia para la entidad Agente usando MySQL.
+ * Adaptador de persistencia para la entidad Agente.
  * Implementa el patrón Repository para abstraer el acceso a datos.
- * 
- * <p>Este adaptador utiliza JDBC puro con PreparedStatements para
- * prevenir inyección SQL y gestionar eficientemente los recursos.</p>
- * 
- * <p><b>Características:</b></p>
+ * * <p>Esta clase representa la implementación técnica del puerto de salida {@link IAgenteRepository}.
+ * Aunque su nombre histórica refiere a MySQL, el código utiliza JDBC estándar,
+ * por lo que es compatible con <b>SQLite</b> y otros motores relacionales.</p>
+ * * <p><b>Buenas Prácticas Implementadas:</b></p>
  * <ul>
- *   <li>Uso de try-with-resources para gestión automática de conexiones</li>
- *   <li>PreparedStatements para prevenir SQL Injection</li>
- *   <li>Manejo centralizado de excepciones SQL</li>
- *   <li>Validaciones defensivas de parámetros</li>
+ * <li><b>Try-with-resources:</b> Garantiza el cierre de conexiones y evita fugas de memoria.</li>
+ * <li><b>PreparedStatements:</b> Previene ataques de Inyección SQL.</li>
+ * <li><b>Wrapping de Excepciones:</b> Captura errores técnicos (SQLException) y lanza errores de dominio (CallCenterException).</li>
+ * <li><b>Consultas Explícitas:</b> Se definen las columnas a consultar en lugar de usar wildcard (*).</li>
  * </ul>
- * 
- * @author Jose 
- * @version 2.0
+ * * @author Jose
+ * @version 2.1
  * @since 2025
  */
 public class AgenteMySqlAdapter implements IAgenteRepository {
 
-    //  CONSTANTES SQL 
+ 
+    // CONSTANTES SQL (Consultas Precompiladas)
+
     
     private static final String SQL_INSERT = 
-        "INSERT INTO agentes (nombre_completo, numero_empleado, telefono_contacto, " +
-        "email, horario_turno, nivel_experiencia) " +
+        "INSERT INTO agentes (nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia) " +
         "VALUES (?, ?, ?, ?, ?, ?)";
     
     private static final String SQL_SELECT_ALL = 
-        "SELECT id_agente, nombre_completo, numero_empleado, telefono_contacto, " +
-        "email, horario_turno, nivel_experiencia " +
-        "FROM agentes " +
-        "ORDER BY nombre_completo";
+        "SELECT id_agente, nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia " +
+        "FROM agentes ORDER BY nombre_completo";
     
     private static final String SQL_UPDATE = 
-        "UPDATE agentes SET " +
-        "nombre_completo = ?, " +
-        "numero_empleado = ?, " +
-        "telefono_contacto = ?, " +
-        "email = ?, " +
-        "horario_turno = ?, " +
-        "nivel_experiencia = ? " +
-        "WHERE id_agente = ?";
+        "UPDATE agentes SET nombre_completo = ?, numero_empleado = ?, telefono_contacto = ?, " +
+        "email = ?, horario_turno = ?, nivel_experiencia = ? WHERE id_agente = ?";
     
     private static final String SQL_DELETE = 
         "DELETE FROM agentes WHERE id_agente = ?";
+    
+    private static final String SQL_SELECT_BY_ID = 
+        "SELECT id_agente, nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia " +
+        "FROM agentes WHERE id_agente = ?";
+
+    // IMPLEMENTACIÓN DE MÉTODOS CRUD
 
     /**
      * Persiste un nuevo agente en la base de datos.
-     * 
-     * @param agente entidad de dominio a guardar
+     * Utiliza RETURN_GENERATED_KEYS para recuperar el ID asignado por SQLite.
+     * * @param agente entidad de dominio a guardar
      * @throws IllegalArgumentException si el agente es null
      * @throws CallCenterException si ocurre un error de persistencia
      */
@@ -78,29 +75,30 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             int filasAfectadas = stmt.executeUpdate();
             
             if (filasAfectadas == 0) {
-                throw new CallCenterException(
-                    "No se pudo guardar el agente en la base de datos"
-                );
+                throw new CallCenterException("No se pudo guardar el agente, no se creó el registro.");
             }
             
-            // Obtener el ID generado (opcional, útil para operaciones posteriores)
+            // Recuperar el ID generado (Auto-increment)
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     agente.setIdAgente(generatedKeys.getLong(1));
+                } else {
+                    throw new CallCenterException("Error al obtener el ID del agente creado.");
                 }
             }
             
         } catch (SQLException e) {
-            throw new CallCenterException(
-                "Error al guardar agente en la base de datos: " + e.getMessage(), e
-            );
+            // Manejo específico para duplicados (Constraint Unique)
+            if (e.getMessage().contains("UNIQUE") || e.getMessage().contains("Duplicate")) {
+                throw new CallCenterException("El número de empleado ya se encuentra registrado.");
+            }
+            throw new CallCenterException("Error de base de datos al guardar agente: " + e.getMessage(), e);
         }
     }
 
     /**
      * Recupera todos los agentes registrados en el sistema.
-     * 
-     * @return lista inmutable de agentes
+     * * @return lista inmutable de agentes
      * @throws CallCenterException si ocurre un error de lectura
      */
     @Override
@@ -115,21 +113,18 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
                 agentes.add(mapearAgente(rs));
             }
             
+            // Retornamos lista inmutable para proteger los datos recuperados
             return Collections.unmodifiableList(agentes);
             
         } catch (SQLException e) {
-            throw new CallCenterException(
-                "Error al consultar la lista de agentes: " + e.getMessage(), e
-            );
+            throw new CallCenterException("Error al consultar la lista de agentes", e);
         }
     }
 
     /**
      * Actualiza los datos de un agente existente.
-     * 
-     * @param agente entidad con datos actualizados (debe incluir ID)
+     * * @param agente entidad con datos actualizados (debe incluir ID)
      * @throws IllegalArgumentException si el agente es null o no tiene ID
-     * @throws CallCenterException si el agente no existe o hay error de BD
      */
     @Override
     public void actualizar(Agente agente) {
@@ -139,29 +134,23 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
         try (Connection conn = ConexionDB.obtenerConexion(); 
              PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
             
-            configurarStatementActualizar(stmt, agente);
+            configurarStatementGuardar(stmt, agente); // Reusamos la config de parámetros
+            stmt.setLong(7, agente.getIdAgente()); // El ID es el parámetro 7
             
             int filasAfectadas = stmt.executeUpdate();
             
             if (filasAfectadas == 0) {
-                throw new CallCenterException(
-                    "Agente con ID " + agente.getIdAgente() + " no encontrado para actualizar"
-                );
+                throw new CallCenterException("No se encontró el agente con ID " + agente.getIdAgente() + " para actualizar.");
             }
             
         } catch (SQLException e) {
-            throw new CallCenterException(
-                "Error al actualizar agente: " + e.getMessage(), e
-            );
+            throw new CallCenterException("Error al actualizar la información del agente", e);
         }
     }
 
     /**
      * Elimina un agente del sistema de forma permanente.
-     * 
-     * @param id identificador único del agente
-     * @throws IllegalArgumentException si el ID es null o inválido
-     * @throws CallCenterException si el agente no existe o hay error de BD
+     * * @param id identificador único del agente
      */
     @Override
     public void eliminar(Long id) {
@@ -175,31 +164,41 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             int filasAfectadas = stmt.executeUpdate();
             
             if (filasAfectadas == 0) {
-                throw new CallCenterException(
-                    "Agente con ID " + id + " no encontrado para eliminar"
-                );
+                throw new CallCenterException("No se encontró el agente con ID " + id + " para eliminar.");
             }
             
         } catch (SQLException e) {
-            throw new CallCenterException(
-                "Error al eliminar agente: " + e.getMessage(), e
-            );
+            // Manejo de restricción de clave foránea (Si el agente tiene llamadas)
+            if (e.getMessage().contains("FOREIGN KEY")) {
+                throw new CallCenterException("No se puede eliminar el agente porque tiene llamadas asociadas.");
+            }
+            throw new CallCenterException("Error al eliminar agente", e);
+        }
+    }
+   
+    public Agente buscarPorId(Long id) {
+        validarIdAgente(id);
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(SQL_SELECT_BY_ID)) {
+             
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapearAgente(rs);
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new CallCenterException("Error al buscar agente por ID", e);
         }
     }
 
-    
     // MÉTODOS PRIVADOS DE UTILIDAD
-   
 
     /**
-     * Configura un PreparedStatement para operaciones de inserción.
-     * 
-     * @param stmt statement a configurar
-     * @param agente datos origen
-     * @throws SQLException si hay error al setear parámetros
+     * Configura los parámetros del PreparedStatement.
      */
-    private void configurarStatementGuardar(PreparedStatement stmt, Agente agente) 
-            throws SQLException {
+    private void configurarStatementGuardar(PreparedStatement stmt, Agente agente) throws SQLException {
         stmt.setString(1, agente.getNombreCompleto());
         stmt.setString(2, agente.getNumeroEmpleado());
         stmt.setString(3, agente.getTelefonoContacto());
@@ -209,56 +208,30 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
     }
 
     /**
-     * Configura un PreparedStatement para operaciones de actualización.
-     * 
-     * @param stmt statement a configurar
-     * @param agente datos origen
-     * @throws SQLException si hay error al setear parámetros
-     */
-    private void configurarStatementActualizar(PreparedStatement stmt, Agente agente) 
-            throws SQLException {
-        configurarStatementGuardar(stmt, agente);
-        stmt.setLong(7, agente.getIdAgente());
-    }
-
-    /**
-     * Mapea un ResultSet a una entidad Agente.
-     * 
-     * @param rs resultado de consulta SQL
-     * @return entidad Agente poblada
-     * @throws SQLException si hay error al leer columnas
+     * Mapea un ResultSet a una entidad Agente usando Setters.
+     * Es más seguro que usar constructores largos.
      */
     private Agente mapearAgente(ResultSet rs) throws SQLException {
-        return new Agente(
-            rs.getLong("id_agente"),
-            rs.getString("nombre_completo"),
-            rs.getString("numero_empleado"),
-            rs.getString("telefono_contacto"),
-            rs.getString("email"),
-            rs.getString("horario_turno"),
-            rs.getString("nivel_experiencia")
-        );
+        Agente a = new Agente();
+        a.setIdAgente(rs.getLong("id_agente"));
+        a.setNombreCompleto(rs.getString("nombre_completo"));
+        a.setNumeroEmpleado(rs.getString("numero_empleado"));
+        a.setTelefonoContacto(rs.getString("telefono_contacto"));
+        a.setEmail(rs.getString("email"));
+        a.setHorarioTurno(rs.getString("horario_turno"));
+        a.setNivelExperiencia(rs.getString("nivel_experiencia"));
+        return a;
     }
 
-    /**
-     * Valida que el agente no sea null.
-     */
     private void validarAgenteNoNulo(Agente agente) {
         if (agente == null) {
-            throw new IllegalArgumentException(
-                "El agente no puede ser null"
-            );
+            throw new IllegalArgumentException("La entidad Agente no puede ser null.");
         }
     }
 
-    /**
-     * Valida que el ID del agente sea válido.
-     */
     private void validarIdAgente(Long id) {
         if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                "ID de agente inválido: " + id
-            );
+            throw new IllegalArgumentException("ID de agente inválido: " + id);
         }
     }
 }
