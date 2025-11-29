@@ -58,7 +58,7 @@ db.url=jdbc:mysql://localhost:3306/callcenter_db?useSSL=false&allowPublicKeyRetr
 
 # Credenciales de tu MySQL Server local
 db.user=root
-db.password=TU_CONTRASEÑA
+db.password=123456
 Requisitos e Instalación
 Prerrequisitos
 Java JDK 11+
