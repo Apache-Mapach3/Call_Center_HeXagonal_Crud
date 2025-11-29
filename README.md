@@ -1,109 +1,99 @@
-# Sistema de Gestión de Call Center (Desktop)
+# Sistema de Gestión de Call Center (MySQL Edition)
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
 ![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-blue?style=for-the-badge)
 
-Aplicación de escritorio robusta y escalable para la gestión integral de un Call Center. Desarrollada bajo los estrictos lineamientos de la **Arquitectura Hexagonal - Puertos y Adaptadores** para garantizar el desacoplamiento, la mantenibilidad y la independencia tecnológica.
+Aplicación empresarial de escritorio para la gestión integral de un Call Center. Diseñada bajo **Arquitectura Hexagonal**, este sistema implementa una persistencia robusta sobre **MySQL Server** con capacidades de **Auto-Despliegue**.
 
 ---
 
-## Características Principales
+## Innovación: "Auto-Database Deployment"
 
-### Ingeniería de Software
-* **Arquitectura Hexagonal Pura:** Separación estricta entre el Núcleo del Dominio, la Capa de Aplicación y la Infraestructura.
-* **Inyección de Dependencias (DI):** Gestión manual de dependencias en el `Main` (Composition Root) para facilitar el testing y la modularidad.
-* **Base de Datos Embebida (SQLite):** Sistema **"Plug & Play"**. No requiere instalar servidores MySQL ni configurar puertos. La base de datos es un archivo local portátil.
-* **Auto-Migración:** El sistema detecta si la base de datos no existe y crea las tablas automáticamente al iniciar.
+A diferencia de las aplicaciones tradicionales que requieren ejecutar scripts SQL manualmente antes de empezar, este sistema es inteligente:
 
-###  Funcionalidades de Negocio
-* **Gestión de Agentes:** Registro, actualización y control de personal con validaciones de unicidad.
-* **Gestión de Clientes:** Base de datos de clientes con validación de documentos de identidad.
-* **Campañas de Marketing:** Administración de campañas activas con control de fechas y objetivos.
-* **Registro Transaccional de Llamadas:**
-    * Validación de **Integridad Referencial en Capa de Servicio**: Verifica la existencia real de Agente, Cliente y Campaña antes de guardar.
-    * Historial completo con consultas optimizadas (JOINs) para reportes.
+1.  **Detección Automática:** Al iniciar, verifica si la base de datos `callcenter_db` existe en tu servidor MySQL.
+2.  **Auto-Creación:** Si no existe, la aplicación se conecta al servidor, crea la base de datos y construye todas las tablas y relaciones automáticamente.
+3.  **Transparencia:** El usuario final no necesita interactuar con consolas SQL ni Workbench. Solo necesita tener el servicio de MySQL encendido.
 
 ---
 
-##  Arquitectura Técnica
+## Arquitectura Técnica
 
-El proyecto sigue la estructura de **Puertos y Adaptadores**:
+El proyecto sigue estrictamente el patrón de **Puertos y Adaptadores**:
 
 ```text
 com.udc.callcenterdesktop
-├── dominio (NÚCLEO - Java Puro)
-│   ├── modelo       # Entidades ricas (Agente, Cliente, Llamada)
-│   ├── puertos      # Interfaces (Contratos para Repositorios y Servicios)
-│   └── excepciones  # Excepciones de negocio (CallCenterException)
+├── dominio (NÚCLEO)
+│   ├── modelo       # Entidades (Agente, Cliente, Llamada)
+│   └── puertos      # Interfaces (Repositorios y Servicios)
 │
-├── aplicacion (ORQUESTACIÓN)
-│   ├── servicios    # Lógica de negocio y Casos de Uso
-│   ├── dto          # Data Transfer Objects (Objetos planos)
-│   └── mapper       # Conversores DTO <-> Entidad
+├── aplicacion (LÓGICA)
+│   ├── servicios    # Casos de uso y Validaciones de Negocio
+│   └── mapper       # Conversión DTO <-> Entidad
 │
-└── infraestructura (ADAPTADORES - Detalles Técnicos)
-    ├── entrada      # GUI (Java Swing - JFrames)
-    └── salida       # Persistencia (SQLite JDBC Implementation)
+└── infraestructura (ADAPTADORES)
+    ├── entrada      # GUI (Java Swing)
+    └── salida       # Persistencia (MySQL JDBC Implementation)
+Características de Ingeniería
+Integridad Referencial: Validaciones cruzadas en capa de servicio y restricciones FOREIGN KEY en base de datos.
 
-Configuración
-El proyecto utiliza configuración externalizada para mayor seguridad.
+Seguridad: Uso de PreparedStatement para prevenir inyección SQL.
+
+Manejo de Errores: Wrapper de excepciones SQL a excepciones de dominio (CallCenterException).
+
+Configuración de Conexión
+El sistema carga las credenciales desde un archivo externo para facilitar el despliegue.
 
 Archivo: src/main/resources/config.properties
 
 Properties
 
-# Configuración SQLite
-db.driver=org.sqlite.JDBC
-db.url=jdbc:sqlite:callcenter_database.db
-# No requiere usuario/pass por defecto en modo archivo local
-db.user=
-db.password=
+# Driver oficial de MySQL 8
+db.driver=com.mysql.cj.jdbc.Driver
+
+# Conexión al servidor local
+db.url=jdbc:mysql://localhost:3306/callcenter_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+# Credenciales de tu MySQL Server local
+db.user=root
+db.password=TU_CONTRASEÑA
 Requisitos e Instalación
 Prerrequisitos
-Java JDK: Versión 11 o superior (Recomendado JDK 17 o 21).
+Java JDK 11+
 
-Maven: Para la gestión de dependencias y construcción.
+MySQL Server (8.0+) instalado y ejecutándose (XAMPP, WAMP o Community Server).
 
-NetBeans
+Maven para la gestión de dependencias.
 
-Ejecución (Plug & Play)
-Dado que usa SQLite, no necesitas instalar ningún motor de base de datos.
-
+Puesta en Marcha
 Clonar el repositorio:
 
 Bash
 
 git clone [https://github.com/tu-usuario/CallCenterHexagonal.git](https://github.com/tu-usuario/CallCenterHexagonal.git)
-Construir el proyecto:
+Configurar Credenciales: Edita el archivo config.properties con tu usuario y contraseña de MySQL.
 
-Bash
+Ejecutar: Corre la clase Main.java.
 
-mvn clean install
-Ejecutar:
+¡Observa la consola! Verás cómo el sistema crea la base de datos por ti la primera vez.
 
-Desde el IDE: Ejecuta la clase com.udc.callcenterdesktop.Main.
+Modelo de Datos
+El sistema gestiona 4 entidades principales con relaciones fuertes:
 
-El sistema creará automáticamente el archivo callcenter_database.db en la raíz del proyecto.
+Agentes: Personal del call center.
 
-Seguridad y Buenas Prácticas
-Try-with-resources: Gestión automática del cierre de conexiones JDBC para evitar fugas de memoria y bloqueos de archivo.
+Clientes: Base de datos de contactos.
 
-PreparedStatements: Protección total contra Inyección SQL.
+Campañas: Proyectos de marketing activos.
 
-Validaciones Defensivas:
-
-Los Servicios validan DTOs antes de procesarlos.
-
-Los Repositorios validan Entidades antes de persistirlas.
-
-Encapsulamiento: Todos los atributos de DTOs y Entidades son privados con acceso controlado.
-
+Llamadas: Registro transaccional que vincula Agente + Cliente + Campaña.
+---
 Autores
 Proyecto desarrollado como parte de la asignatura de Arquitectura de Software.
 
-Jose Rivera - Lógica de Negocio, Validaciones y Migración de Datos.
-Carlos Molano - Infraestructura, Configuración SQLite y Adaptadores.
+Jose Rivera - Modulo de Agente y Cliente - Lógica de Negocio, Validaciones y Migración a MySQL Server.
+Carlos Molano - Infraestructura  -  Modulo de LLamada y Campaña - Configuración SQLite y Adaptadores.
 
 Made with ❤️ and Java Swing.
