@@ -25,7 +25,7 @@ import java.util.List;
  * <li><b>Integridad:</b> Manejo de restricciones de base de datos (Unique/Foreign Keys).</li>
  * <li><b>Eficiencia:</b> Gestión automática de recursos con try-with-resources.</li>
  * </ul>
- * * @author Infraestructura Team
+ * * @author Jose
  * @version 2.1
  * @since 2025
  */

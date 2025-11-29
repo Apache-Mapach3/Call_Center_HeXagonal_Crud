@@ -14,26 +14,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adaptador de persistencia para la entidad Llamada (SQLite).
- * Implementa el patrón Repository para abstraer el acceso a datos.
+ * Adaptador de persistencia para Llamadas en MySQL Server.
  * 
- * <p>Esta clase maneja la persistencia de llamadas en SQLite,
- * incluyendo consultas con JOINs para obtener nombres de entidades relacionadas.</p>
+ * <p><b>Optimizaciones MySQL:</b></p>
+ * <ul>
+ *   <li>Uso de tipo DATETIME nativo de MySQL</li>
+ *   <li>Conversión automática LocalDateTime ↔ java.sql.Timestamp</li>
+ *   <li>JOIN optimizado con índices</li>
+ * </ul>
  * 
  * @author Carlos
- * @version 3.0 - SQLite Edition
- * @since 2025
+ * @version 4.0 - MySQL Edition
  */
 public class LlamadaMySqlAdapter implements ILlamadaRepository {
 
     // SQL para insertar una nueva llamada
     private static final String INSERT_SQL = 
-            "INSERT INTO llamadas (fecha_hora, duracion_segundos, detalle_resultado, observaciones, id_agente, id_cliente, id_campania) " +
+            "INSERT INTO llamadas (fecha_hora, duracion_segundos, detalle_resultado, " +
+            "observaciones, id_agente, id_cliente, id_campania) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     // SQL para obtener historial con JOINs (nombres incluidos)
     private static final String SELECT_HISTORY_SQL = 
-            "SELECT l.id_llamada, l.fecha_hora, l.duracion_segundos, l.detalle_resultado, l.observaciones, " +
+            "SELECT " +
+            "l.id_llamada, l.fecha_hora, l.duracion_segundos, l.detalle_resultado, l.observaciones, " +
             "a.nombre_completo AS nom_agente, " +
             "c.nombre_completo AS nom_cliente, " +
             "camp.nombre_campania AS nom_campania " +
@@ -41,43 +45,56 @@ public class LlamadaMySqlAdapter implements ILlamadaRepository {
             "INNER JOIN agentes a ON l.id_agente = a.id_agente " +
             "INNER JOIN clientes c ON l.id_cliente = c.id_cliente " +
             "INNER JOIN campanias camp ON l.id_campania = camp.id_campania " +
-            "ORDER BY l.id_llamada DESC LIMIT 50";
+            "ORDER BY l.fecha_hora DESC LIMIT 100";
 
     /**
      * Registra una nueva llamada en la base de datos.
-     * 
-     * <p><b>IMPORTANTE:</b> Este método recibe una entidad de dominio {@link Llamada},
-     * NO un DTO. La conversión de DTO a Entidad se hace en la capa de servicio.</p>
      * 
      * @param llamada entidad de dominio a persistir
      * @throws CallCenterException si ocurre un error de persistencia
      */
     @Override
-public void registrar(Llamada llamada) { // ← RECIBE ENTIDAD, NO DTO
-    try (Connection conn = ConexionDB.obtenerConexion();
-         PreparedStatement stmt = conn.prepareStatement(INSERT_SQL)) {
+    public void registrar(Llamada llamada) {
+        if (llamada == null) {
+            throw new IllegalArgumentException("La entidad Llamada no puede ser null");
+        }
         
-        configurarStatementInsertar(stmt, llamada);
-        stmt.executeUpdate();
-        
-    } catch (SQLException e) {
-        throw new CallCenterException("Error al guardar", e);
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+            
+            configurarStatementLlamada(stmt, llamada);
+            
+            int rows = stmt.executeUpdate();
+            if (rows == 0) {
+                throw new CallCenterException(
+                    "No se pudo registrar la llamada, no se afectaron filas."
+                );
+            }
+            
+            // Recuperar el ID generado
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    llamada.setIdLlamada(generatedKeys.getLong(1));
+                }
+            }
+            
+        } catch (SQLException e) {
+            // Manejo específico de errores de Foreign Key
+            if (e.getErrorCode() == 1452) { // Cannot add or update a child row
+                throw new CallCenterException(
+                    "Error de integridad referencial: Verifique que el Agente, " +
+                    "Cliente y Campaña existan en la base de datos.",
+                    e
+                );
+            }
+            throw new CallCenterException("Error de BD al registrar llamada", e);
+        }
     }
-}
 
     /**
      * Lista el historial de llamadas con nombres de entidades relacionadas.
      * 
-     * <p>Esta consulta utiliza JOINs para obtener los nombres de:</p>
-     * <ul>
-     *   <li>Agente que atendió</li>
-     *   <li>Cliente contactado</li>
-     *   <li>Campaña asociada</li>
-     * </ul>
-     * 
-     * <p>Esto evita el problema N+1 y mejora el rendimiento.</p>
-     * 
-     * @return lista de DTOs con información completa de las llamadas
+     * @return lista de DTOs con información completa
      */
     @Override
     public List<LlamadaDTO> listarLlamadasConNombres() {
@@ -99,74 +116,60 @@ public void registrar(Llamada llamada) { // ← RECIBE ENTIDAD, NO DTO
         return historial;
     }
     
-   
-    // MÉTODOS PRIVADOS DE UTILIDAD
-    
     /**
-     * Configura los parámetros del PreparedStatement para insertar.
-     * 
-     * @param stmt PreparedStatement a configurar
-     * @param llamada entidad con los datos a insertar
-     * @throws SQLException si ocurre un error al configurar parámetros
+     * Configura los parámetros del PreparedStatement.
+     * IMPORTANTE: Conversión correcta de LocalDateTime a java.sql.Timestamp para MySQL.
      */
-    private void configurarStatementInsertar(PreparedStatement stmt, Llamada llamada) throws SQLException {
-        // Parámetro 1: fecha_hora (como String ISO-8601)
+    private void configurarStatementLlamada(PreparedStatement stmt, Llamada llamada) 
+            throws SQLException {
+        
+        // Parámetro 1: fecha_hora (DATETIME en MySQL)
+        // Conversión: LocalDateTime → java.sql.Timestamp
         if (llamada.getFechaHora() != null) {
-            stmt.setString(1, llamada.getFechaHora().toString());
+            stmt.setTimestamp(1, Timestamp.valueOf(llamada.getFechaHora()));
         } else {
-            stmt.setString(1, LocalDateTime.now().toString());
+            stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
         }
         
-        // Parámetro 2: duracion_segundos
+        // Parámetro 2: duracion_segundos (INT en MySQL)
         stmt.setInt(2, llamada.getDuracion());
         
-        // Parámetro 3: detalle_resultado
+        // Parámetro 3: detalle_resultado (VARCHAR en MySQL)
         stmt.setString(3, llamada.getDetalleResultado());
         
-        // Parámetro 4: observaciones (puede ser null)
-        stmt.setString(4, llamada.getObservaciones());
+        // Parámetro 4: observaciones (TEXT en MySQL, puede ser NULL)
+        if (llamada.getObservaciones() != null && !llamada.getObservaciones().trim().isEmpty()) {
+            stmt.setString(4, llamada.getObservaciones());
+        } else {
+            stmt.setNull(4, Types.VARCHAR);
+        }
         
-        // Parámetro 5: id_agente
+        // Parámetros 5-7: Foreign Keys
         stmt.setLong(5, llamada.getIdAgente());
-        
-        // Parámetro 6: id_cliente
         stmt.setLong(6, llamada.getIdCliente());
-        
-        // Parámetro 7: id_campania
         stmt.setLong(7, llamada.getIdCampania());
     }
     
     /**
      * Mapea un ResultSet (con JOINs) a un DTO de Llamada.
-     * 
-     * <p>Este método maneja la conversión de los datos obtenidos
-     * de la consulta SQL que incluye JOINs con las tablas relacionadas.</p>
-     * 
-     * @param rs ResultSet con los datos de la consulta
-     * @return DTO mapeado con toda la información
-     * @throws SQLException si ocurre un error al leer el ResultSet
+     * IMPORTANTE: Conversión correcta de java.sql.Timestamp a LocalDateTime.
      */
     private LlamadaDTO mapearLlamadaConNombres(ResultSet rs) throws SQLException {
         LlamadaDTO dto = new LlamadaDTO();
         
-        // Mapear campos básicos de la llamada
+        // Campos básicos de la llamada
         dto.setIdLlamada(rs.getLong("id_llamada"));
         dto.setDuracion(rs.getInt("duracion_segundos"));
         dto.setDetalleResultado(rs.getString("detalle_resultado"));
         dto.setObservaciones(rs.getString("observaciones"));
         
-        // Mapear fecha/hora (convertir de String a LocalDateTime)
-        String fechaStr = rs.getString("fecha_hora");
-        if (fechaStr != null && !fechaStr.isEmpty()) {
-            try {
-                dto.setFechaHora(LocalDateTime.parse(fechaStr));
-            } catch (Exception e) {
-                // Si falla el parseo, usar fecha actual
-                dto.setFechaHora(LocalDateTime.now());
-            }
+        // Fecha/hora: Conversión java.sql.Timestamp → LocalDateTime
+        Timestamp fechaHoraTimestamp = rs.getTimestamp("fecha_hora");
+        if (fechaHoraTimestamp != null) {
+            dto.setFechaHora(fechaHoraTimestamp.toLocalDateTime());
         }
         
-        // Mapear nombres obtenidos de los JOINs
+        // Nombres obtenidos de los JOINs
         dto.setNombreAgente(rs.getString("nom_agente"));
         dto.setNombreCliente(rs.getString("nom_cliente"));
         dto.setNombreCampania(rs.getString("nom_campania"));
