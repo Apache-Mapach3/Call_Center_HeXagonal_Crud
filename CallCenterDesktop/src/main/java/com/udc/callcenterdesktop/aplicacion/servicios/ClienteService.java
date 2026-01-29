@@ -8,10 +8,6 @@ import com.udc.callcenterdesktop.dominio.puertos.salida.IClienteRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Servicio de Cliente - Versión KISS
- * SIMPLIFICADO: Conversión correcta DTO <-> Entidad
- */
 public class ClienteService implements IClienteService {
 
     private final IClienteRepository clienteRepository;
@@ -22,7 +18,6 @@ public class ClienteService implements IClienteService {
 
     @Override
     public void guardar(ClienteDTO dto) {
-        // CORRECCIÓN: Usar constructor completo
         Cliente cliente = new Cliente(
                 dto.getIdCliente(),
                 dto.getNombreCompleto(),
@@ -31,7 +26,12 @@ public class ClienteService implements IClienteService {
                 dto.getEmail(),
                 dto.getDireccion()
         );
-        clienteRepository.guardar(cliente);
+        
+        if (dto.getIdCliente() != null) {
+            clienteRepository.actualizar(cliente);
+        } else {
+            clienteRepository.guardar(cliente);
+        }
     }
 
     @Override
@@ -47,7 +47,6 @@ public class ClienteService implements IClienteService {
         clienteRepository.eliminar(id);
     }
 
-    // Método auxiliar para convertir Entidad -> DTO
     private ClienteDTO convertirADTO(Cliente c) {
         ClienteDTO dto = new ClienteDTO();
         dto.setIdCliente(c.getIdCliente());

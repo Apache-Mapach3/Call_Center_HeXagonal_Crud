@@ -12,4 +12,8 @@ public interface IAgenteService {
     void actualizarAgente(AgenteDTO dto);
 
     void eliminarAgente(Long id);
+
+    public void guardar(AgenteDTO dto);
+
+    public Iterable<AgenteDTO> listarTodos();
 }
