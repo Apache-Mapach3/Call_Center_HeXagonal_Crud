@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.udc.callcenterdesktop.dominio.modelo;
 
 import java.time.LocalDateTime;
@@ -70,6 +66,19 @@ public class Llamada {
         this.idCliente = idCliente;
     }
 
+    private Agente agente;
+private Cliente cliente;
+private Campania campania;
+
+// Getters y Setters para estos tres
+public Agente getAgente() { return agente; }
+public void setAgente(Agente agente) { this.agente = agente; }
+
+public Cliente getCliente() { return cliente; }
+public void setCliente(Cliente cliente) { this.cliente = cliente; }
+
+public Campania getCampania() { return campania; }
+public void setCampania(Campania campania) { this.campania = campania; }
     // GETTERS Y SETTERS 
 
     public Long getIdLlamada() { 

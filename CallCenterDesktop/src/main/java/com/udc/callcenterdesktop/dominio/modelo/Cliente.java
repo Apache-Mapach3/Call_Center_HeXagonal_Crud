@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.udc.callcenterdesktop.dominio.modelo;
 
 /**
@@ -46,8 +42,7 @@ public class Cliente {
      * @param email correo electrónico
      * @param direccion dirección física completa
      */
-    public Cliente(Long idCliente, String nombreCompleto, String documentoIdentidad, 
-                   String telefono, String email, String direccion) {
+    public Cliente(Long idCliente, String nombreCompleto, Object documento, String documentoIdentidad) {
         this.idCliente = idCliente;
         this.nombreCompleto = nombreCompleto;
         this.documentoIdentidad = documentoIdentidad;
@@ -129,5 +124,9 @@ public class Cliente {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public String getDocumento() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
