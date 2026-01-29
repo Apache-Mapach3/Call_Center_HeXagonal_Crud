@@ -1,21 +1,8 @@
 package com.udc.callcenterdesktop.dominio.modelo;
 
 /**
- * Entidad de dominio que representa un Cliente del Call Center.
- * 
- * <p>Un cliente es una persona o entidad que recibe servicios
- * o productos a través del centro de llamadas.</p>
- * 
- * <p><b>Reglas de negocio:</b></p>
- * <ul>
- *   <li>Nombre completo es obligatorio</li>
- *   <li>Documento de identidad debe ser único en el sistema</li>
- *   <li>Al menos un método de contacto (teléfono o email) es requerido</li>
- * </ul>
- * 
- * @author Carlos
- * @version 1.0
- * @since 2024
+ * Entidad Cliente - Versión KISS
+ * SIMPLIFICADO: Todos los métodos funcionan correctamente
  */
 public class Cliente {
     
@@ -26,23 +13,13 @@ public class Cliente {
     private String email;
     private String direccion;
 
-    /**
-     * Constructor vacío requerido por frameworks.
-     */
+    // Constructor vacío
     public Cliente() {
     }
 
-    /**
-     * Constructor completo para instanciación directa.
-     * 
-     * @param idCliente identificador único
-     * @param nombreCompleto nombre completo del cliente
-     * @param documentoIdentidad cédula, DNI o identificación oficial
-     * @param telefono número de teléfono principal
-     * @param email correo electrónico
-     * @param direccion dirección física completa
-     */
-    public Cliente(Long idCliente, String nombreCompleto, Object documento, String documentoIdentidad) {
+    // Constructor completo
+    public Cliente(Long idCliente, String nombreCompleto, String documentoIdentidad, 
+                   String telefono, String email, String direccion) {
         this.idCliente = idCliente;
         this.nombreCompleto = nombreCompleto;
         this.documentoIdentidad = documentoIdentidad;
@@ -51,57 +28,65 @@ public class Cliente {
         this.direccion = direccion;
     }
 
-    // GETTERS Y SETTERS
+    // ===== GETTERS Y SETTERS =====
 
-    public Long getIdCliente() { 
-        return idCliente; 
+    public Long getIdCliente() {
+        return idCliente;
     }
 
-    public void setIdCliente(Long idCliente) { 
-        this.idCliente = idCliente; 
+    public void setIdCliente(Long idCliente) {
+        this.idCliente = idCliente;
     }
 
-    public String getNombreCompleto() { 
-        return nombreCompleto; 
+    public String getNombreCompleto() {
+        return nombreCompleto;
     }
 
-    public void setNombreCompleto(String nombreCompleto) { 
-        this.nombreCompleto = nombreCompleto; 
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
     }
 
-    public String getDocumentoIdentidad() { 
-        return documentoIdentidad; 
+    public String getDocumentoIdentidad() {
+        return documentoIdentidad;
     }
 
-    public void setDocumentoIdentidad(String documentoIdentidad) { 
-        this.documentoIdentidad = documentoIdentidad; 
+    public void setDocumentoIdentidad(String documentoIdentidad) {
+        this.documentoIdentidad = documentoIdentidad;
     }
 
-    public String getTelefono() { 
-        return telefono; 
+    public String getTelefono() {
+        return telefono;
     }
 
-    public void setTelefono(String telefono) { 
-        this.telefono = telefono; 
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
-    public String getEmail() { 
-        return email; 
+    public String getEmail() {
+        return email;
     }
 
-    public void setEmail(String email) { 
-        this.email = email; 
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getDireccion() { 
-        return direccion; 
+    public String getDireccion() {
+        return direccion;
     }
 
-    public void setDireccion(String direccion) { 
-        this.direccion = direccion; 
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 
-    //MÉTODOS DE UTILIDAD 
+    // ===== ALIAS PARA COMPATIBILIDAD =====
+    
+    public String getDocumento() {
+        return documentoIdentidad;
+    }
+
+    public void setDocumento(String documento) {
+        this.documentoIdentidad = documento;
+    }
 
     @Override
     public String toString() {
@@ -109,24 +94,6 @@ public class Cliente {
                 "idCliente=" + idCliente +
                 ", nombreCompleto='" + nombreCompleto + '\'' +
                 ", documentoIdentidad='" + documentoIdentidad + '\'' +
-                ", telefono='" + telefono + '\'' +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Cliente cliente = (Cliente) o;
-        return idCliente != null && idCliente.equals(cliente.idCliente);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    public String getDocumento() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
