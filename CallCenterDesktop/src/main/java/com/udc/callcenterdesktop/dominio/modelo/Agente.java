@@ -1,146 +1,125 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.udc.callcenterdesktop.dominio.modelo;
 
-/**
- * Entidad de dominio que representa un Agente del Call Center.
- * 
- * <p>Un agente es un empleado que atiende llamadas y gestiona
- * interacciones con clientes. Esta clase es un POJO puro sin
- * dependencias de frameworks externos.</p>
- * 
- * <p><b>Invariantes de negocio:</b></p>
- * <ul>
- *   <li>El nombre completo es obligatorio</li>
- *   <li>El número de empleado debe ser único</li>
- *   <li>El email debe tener formato válido si se proporciona</li>
- * </ul>
- * 
- * @author Jose 
- * @version 1.0
- * @since 2025
- */
 public class Agente {
-    
-    private Long idAgente;
-    private String nombreCompleto;
+
+    private Long id;
     private String numeroEmpleado;
     private String telefonoContacto;
-    private String email;
     private String horarioTurno;
     private String nivelExperiencia;
 
-    /**
-     * Constructor vacío requerido por frameworks y librerías de persistencia.
-     */
+    // ===== CONSTRUCTORES =====
+
     public Agente() {
     }
 
-    /**
-     * Constructor completo para crear una instancia de Agente.
-     * 
-     * @param idAgente identificador único (puede ser null para nuevos registros)
-     * @param nombreCompleto nombre completo del agente
-     * @param numeroEmpleado código único de empleado
-     * @param telefonoContacto número de teléfono de contacto
-     * @param email correo electrónico corporativo
-     * @param horarioTurno turno asignado (Mañana, Tarde, Noche)
-     * @param nivelExperiencia nivel de experiencia (Junior, Intermedio, Senior)
-     */
-    public Agente(Long idAgente, String nombreCompleto, String numeroEmpleado, 
-                  String telefonoContacto, String email, String horarioTurno, 
-                  String nivelExperiencia) {
-        this.idAgente = idAgente;
-        this.nombreCompleto = nombreCompleto;
+    public Agente(Long id, String numeroEmpleado, String telefonoContacto,
+                  String horarioTurno, String nivelExperiencia) {
+        this.id = id;
         this.numeroEmpleado = numeroEmpleado;
         this.telefonoContacto = telefonoContacto;
-        this.email = email;
         this.horarioTurno = horarioTurno;
         this.nivelExperiencia = nivelExperiencia;
     }
 
-    //GETTERS Y SETTERS
+    // ===== GETTERS Y SETTERS BASE =====
 
-    public Long getIdAgente() { 
-        return idAgente; 
+    public Long getId() {
+        return id;
     }
 
-    public void setIdAgente(Long idAgente) { 
-        this.idAgente = idAgente; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getNombreCompleto() { 
-        return nombreCompleto; 
+    public String getNumeroEmpleado() {
+        return numeroEmpleado;
     }
 
-    public void setNombreCompleto(String nombreCompleto) { 
-        this.nombreCompleto = nombreCompleto; 
+    public void setNumeroEmpleado(String numeroEmpleado) {
+        this.numeroEmpleado = numeroEmpleado;
     }
 
-    public String getNumeroEmpleado() { 
-        return numeroEmpleado; 
+    public String getTelefonoContacto() {
+        return telefonoContacto;
     }
 
-    public void setNumeroEmpleado(String numeroEmpleado) { 
-        this.numeroEmpleado = numeroEmpleado; 
+    public void setTelefonoContacto(String telefonoContacto) {
+        this.telefonoContacto = telefonoContacto;
     }
 
-    public String getTelefonoContacto() { 
-        return telefonoContacto; 
+    public String getHorarioTurno() {
+        return horarioTurno;
     }
 
-    public void setTelefonoContacto(String telefonoContacto) { 
-        this.telefonoContacto = telefonoContacto; 
+    public void setHorarioTurno(String horarioTurno) {
+        this.horarioTurno = horarioTurno;
     }
 
-    public String getEmail() { 
-        return email; 
+    public String getNivelExperiencia() {
+        return nivelExperiencia;
     }
 
-    public void setEmail(String email) { 
-        this.email = email; 
+    public void setNivelExperiencia(String nivelExperiencia) {
+        this.nivelExperiencia = nivelExperiencia;
     }
 
-    public String getHorarioTurno() { 
-        return horarioTurno; 
+    // ===== MÉTODOS COMPATIBLES (ALIAS) =====
+    // Estos existen SOLO para que el resto del proyecto compile
+
+    public String getCodigoEmpleado() {
+        return numeroEmpleado;
     }
 
-    public void setHorarioTurno(String horarioTurno) { 
-        this.horarioTurno = horarioTurno; 
+    public void setCodigoEmpleado(String codigoEmpleado) {
+        this.numeroEmpleado = codigoEmpleado;
     }
 
-    public String getNivelExperiencia() { 
-        return nivelExperiencia; 
+    public String getTelefono() {
+        return telefonoContacto;
     }
 
-    public void setNivelExperiencia(String nivelExperiencia) { 
-        this.nivelExperiencia = nivelExperiencia; 
+    public void setTelefono(String telefono) {
+        this.telefonoContacto = telefono;
     }
 
-    //MÉTODOS DE UTILIDAD
-
-    @Override
-    public String toString() {
-        return "Agente{" +
-                "idAgente=" + idAgente +
-                ", nombreCompleto='" + nombreCompleto + '\'' +
-                ", numeroEmpleado='" + numeroEmpleado + '\'' +
-                ", nivelExperiencia='" + nivelExperiencia + '\'' +
-                '}';
+    public String getTurno() {
+        return horarioTurno;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Agente agente = (Agente) o;
-        return idAgente != null && idAgente.equals(agente.idAgente);
+    public void setTurno(String turno) {
+        this.horarioTurno = turno;
     }
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public String getExperiencia() {
+        return nivelExperiencia;
+    }
+
+    public void setExperiencia(String experiencia) {
+        this.nivelExperiencia = experiencia;
+    }
+
+    public void setIdAgente(long aLong) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setEmail(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setNombreCompleto(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public String getEmail() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public String getNombreCompleto() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public long getIdAgente() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

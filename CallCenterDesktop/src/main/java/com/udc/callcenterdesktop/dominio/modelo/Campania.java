@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.udc.callcenterdesktop.dominio.modelo;
 
 import java.time.LocalDate;
@@ -38,7 +34,7 @@ public class Campania {
     /**
      * Constructor vacío requerido por frameworks.
      */
-    public Campania() {
+    public Campania(Long idCampania1, String nombreCampania1, Object descripcion) {
     }
 
     /**
@@ -52,9 +48,7 @@ public class Campania {
      * @param supervisoresCargo nombres de los supervisores responsables
      * @param descripcionObjetivos descripción detallada de los objetivos
      */
-    public Campania(Long idCampania, String nombreCampania, String tipoCampania, 
-                    LocalDate fechaInicio, LocalDate fechaFin, 
-                    String supervisoresCargo, String descripcionObjetivos) {
+    public Campania(Long idCampania, String nombreCampania, String tipoCampania, LocalDate fechaInicio, LocalDate fechaFin, String supervisoresCargo, String descripcionObjetivos) {
         this.idCampania = idCampania;
         this.nombreCampania = nombreCampania;
         this.tipoCampania = tipoCampania;
@@ -62,6 +56,10 @@ public class Campania {
         this.fechaFin = fechaFin;
         this.supervisoresCargo = supervisoresCargo;
         this.descripcionObjetivos = descripcionObjetivos;
+    }
+
+    public Campania() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     // GETTERS Y SETTERS 
@@ -158,5 +156,9 @@ public class Campania {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public String getDescripcionCampania() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

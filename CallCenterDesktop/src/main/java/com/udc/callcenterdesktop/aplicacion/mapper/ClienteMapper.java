@@ -42,12 +42,8 @@ public class ClienteMapper {
         
         return new Cliente(
             dto.getIdCliente(),
-            dto.getNombreCompleto(),
-            dto.getDocumentoIdentidad(),
-            dto.getTelefono(),
-            dto.getEmail(),
-            dto.getDireccion()
-        );
+            dto.getNombreCompleto(), dto.getDocumento(),
+            dto.getDocumentoIdentidad());
     }
 
     /**
