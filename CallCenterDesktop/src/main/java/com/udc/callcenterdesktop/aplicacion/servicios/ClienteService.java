@@ -8,6 +8,10 @@ import com.udc.callcenterdesktop.dominio.puertos.salida.IClienteRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de Cliente - Versión KISS
+ * SIMPLIFICADO: Conversión correcta DTO <-> Entidad
+ */
 public class ClienteService implements IClienteService {
 
     private final IClienteRepository clienteRepository;
@@ -18,11 +22,14 @@ public class ClienteService implements IClienteService {
 
     @Override
     public void guardar(ClienteDTO dto) {
+        // CORRECCIÓN: Usar constructor completo
         Cliente cliente = new Cliente(
                 dto.getIdCliente(),
                 dto.getNombreCompleto(),
-                dto.getDocumento(),
-                dto.getTelefono()
+                dto.getDocumentoIdentidad(),
+                dto.getTelefono(),
+                dto.getEmail(),
+                dto.getDireccion()
         );
         clienteRepository.guardar(cliente);
     }
@@ -31,19 +38,24 @@ public class ClienteService implements IClienteService {
     public List<ClienteDTO> listarTodos() {
         return clienteRepository.listarTodos()
                 .stream()
-                .map(c -> {
-                    ClienteDTO dto = new ClienteDTO();
-                    dto.setIdCliente(c.getIdCliente());
-                    dto.setNombreCompleto(c.getNombreCompleto());
-                    dto.setDocumento(c.getDocumento());
-                    dto.setTelefono(c.getTelefono());
-                    return dto;
-                })
+                .map(this::convertirADTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public void eliminar(Long id) {
         clienteRepository.eliminar(id);
+    }
+
+    // Método auxiliar para convertir Entidad -> DTO
+    private ClienteDTO convertirADTO(Cliente c) {
+        ClienteDTO dto = new ClienteDTO();
+        dto.setIdCliente(c.getIdCliente());
+        dto.setNombreCompleto(c.getNombreCompleto());
+        dto.setDocumentoIdentidad(c.getDocumentoIdentidad());
+        dto.setTelefono(c.getTelefono());
+        dto.setEmail(c.getEmail());
+        dto.setDireccion(c.getDireccion());
+        return dto;
     }
 }

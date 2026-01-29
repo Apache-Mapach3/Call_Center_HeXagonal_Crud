@@ -27,7 +27,6 @@ import com.udc.callcenterdesktop.infraestructura.salida.persistencia.LlamadaMySq
 import javax.swing.SwingUtilities;
 
 public class Main {
-
     public static void main(String[] args) {
         // 1. Inicializar Base de Datos
         ConexionDB.inicializarBaseDeDatos();

@@ -7,99 +7,127 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
-import java.util.Scanner;
 
+/**
+ * Gestión de Conexión a MySQL - Versión KISS
+ * SIMPLIFICADO: Sin scripts externos, creación directa de tablas
+ */
 public class ConexionDB {
 
     private static String url;
     private static String user;
     private static String password;
 
-    // 1. CARGA DE CONFIGURACIÓN (Static Block)
+    // Cargar configuración al iniciar la clase
     static {
         try (InputStream input = ConexionDB.class.getClassLoader().getResourceAsStream("config.properties")) {
             Properties prop = new Properties();
 
             if (input == null) {
-                System.out.println("⚠️ No se encontró config.properties, usando valores por defecto.");
-                // Fallback por si falla el archivo
-                url = "jdbc:mysql://localhost:3306/callcenter_db?allowPublicKeyRetrieval=true&useSSL=false";
+                System.out.println("⚠️ config.properties no encontrado, usando valores por defecto");
+                url = "jdbc:mysql://localhost:3306/callcenter_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC";
                 user = "root";
-                password = ""; 
+                password = "123456"; 
             } else {
                 prop.load(input);
                 url = prop.getProperty("db.url");
                 user = prop.getProperty("db.user");
                 password = prop.getProperty("db.password");
             }
+            
+            System.out.println("✅ Configuración de BD cargada correctamente");
+            
         } catch (IOException ex) {
             ex.printStackTrace();
-            throw new RuntimeException("Error cargando configuración de base de datos");
+            throw new RuntimeException("❌ Error cargando configuración de base de datos");
         }
     }
 
-    // 2. OBTENER CONEXIÓN
+    /**
+     * Obtiene una conexión a la base de datos
+     */
     public static Connection obtenerConexion() throws SQLException {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // 3. MÉTODO QUE FALTABA: inicializarBaseDeDatos
-    // Este método es llamado por Main.java
+    /**
+     * Inicializa la base de datos creando las tablas necesarias
+     * KISS: Todo en un solo método, sin archivos externos
+     */
     public static void inicializarBaseDeDatos() {
-        // Intentamos llamar al DbInitializer si existe, o ejecutamos scripts básicos
-        try {
-            System.out.println("🔄 Inicializando base de datos...");
-            
-            // Aquí solemos llamar a los scripts principales
-            // Si tienes un archivo schema.sql en resources, esto lo ejecutará
-            ejecutarScript("schema.sql"); 
-            
-            // Si tienes datos de prueba
-            // ejecutarScript("data.sql"); 
-            
-            System.out.println("✅ Base de datos inicializada.");
-        } catch (Exception e) {
-            // No lanzamos error fatal aquí para que la app arranque aunque el script falle
-            // (por ejemplo, si las tablas ya existen)
-            System.out.println("ℹ️ Nota: La inicialización de BD tuvo detalles o ya existía: " + e.getMessage());
-        }
-    }
-
-    // 4. MÉTODO QUE FALTABA: ejecutarScript
-    // Este método es usado por DbInitializer.java
-    public static void ejecutarScript(String rutaScript) {
+        System.out.println("🔄 Inicializando base de datos...");
+        
         try (Connection conn = obtenerConexion();
-             InputStream is = ConexionDB.class.getClassLoader().getResourceAsStream(rutaScript)) {
+             Statement st = conn.createStatement()) {
 
-            if (is == null) {
-                System.out.println("⚠️ No se encontró el script: " + rutaScript);
-                return;
+            // TABLA AGENTES
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS agentes (
+                    id_agente BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    nombre_completo VARCHAR(100) NOT NULL,
+                    numero_empleado VARCHAR(50) UNIQUE NOT NULL,
+                    telefono_contacto VARCHAR(20),
+                    email VARCHAR(100),
+                    horario_turno VARCHAR(50),
+                    nivel_experiencia VARCHAR(50),
+                    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+
+            // TABLA CLIENTES
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS clientes (
+                    id_cliente BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    nombre_completo VARCHAR(100) NOT NULL,
+                    documento_identidad VARCHAR(50) UNIQUE NOT NULL,
+                    telefono VARCHAR(20),
+                    email VARCHAR(100),
+                    direccion VARCHAR(200),
+                    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+
+            // TABLA CAMPAÑAS
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS campanias (
+                    id_campania BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    nombre_campania VARCHAR(100) NOT NULL,
+                    tipo_campania VARCHAR(50),
+                    descripcion_objetivos TEXT,
+                    fecha_inicio DATE,
+                    fecha_fin DATE,
+                    supervisores_cargo VARCHAR(200),
+                    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+
+            // TABLA LLAMADAS
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS llamadas (
+                    id_llamada BIGINT AUTO_INCREMENT PRIMARY KEY,
+                    fecha_hora DATETIME NOT NULL,
+                    duracion INT COMMENT 'Duración en segundos',
+                    detalle_resultado VARCHAR(100),
+                    observaciones TEXT,
+                    id_agente BIGINT NOT NULL,
+                    id_cliente BIGINT NOT NULL,
+                    id_campania BIGINT NOT NULL,
+                    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (id_agente) REFERENCES agentes(id_agente) ON DELETE RESTRICT,
+                    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE RESTRICT,
+                    FOREIGN KEY (id_campania) REFERENCES campanias(id_campania) ON DELETE RESTRICT
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """);
+
+            System.out.println("✅ Base de datos inicializada correctamente");
+            
+        } catch (SQLException e) {
+            // No falla si las tablas ya existen
+            if (e.getMessage().contains("already exists")) {
+                System.out.println("ℹ️ Las tablas ya existen, continuando...");
+            } else {
+                System.err.println("⚠️ Error al inicializar BD: " + e.getMessage());
             }
-
-            // Usamos Scanner para leer el archivo SQL delimitado por ";"
-            try (Scanner scanner = new Scanner(is)) {
-                scanner.useDelimiter(";");
-                
-                try (Statement st = conn.createStatement()) {
-                    while (scanner.hasNext()) {
-                        String sql = scanner.next().trim();
-                        // Ignoramos líneas vacías o comentarios simples
-                        if (!sql.isEmpty() && !sql.startsWith("--")) {
-                            try {
-                                st.execute(sql);
-                            } catch (SQLException e) {
-                                // Ignoramos errores de "Tabla ya existe" para no detener el flujo
-                                if (!e.getMessage().contains("already exists")) {
-                                    System.err.println("Error ejecutando SQL: " + sql + " -> " + e.getMessage());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        } catch (IOException | SQLException e) {
-            System.err.println("❌ Error crítico ejecutando script " + rutaScript + ": " + e.getMessage());
         }
     }
 }

@@ -15,7 +15,6 @@ com\udc\callcenterdesktop\aplicacion\dto\LlamadaDTO.class
 com\udc\callcenterdesktop\aplicacion\dto\CampaniaDTO.class
 com\udc\callcenterdesktop\dominio\modelo\Campania.class
 com\udc\callcenterdesktop\dominio\puertos\entrada\IAgenteService.class
-com\udc\callcenterdesktop\infraestructura\salida\persistencia\DbInitializer.class
 com\udc\callcenterdesktop\aplicacion\dto\AgenteDTO.class
 com\udc\callcenterdesktop\infraestructura\entrada\vistas\FrmGestionCampanias.class
 com\udc\callcenterdesktop\aplicacion\mapper\AgenteMapper.class

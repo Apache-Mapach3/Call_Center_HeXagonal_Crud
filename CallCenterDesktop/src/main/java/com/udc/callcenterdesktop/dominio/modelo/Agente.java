@@ -1,35 +1,52 @@
 package com.udc.callcenterdesktop.dominio.modelo;
 
+/**
+ * Entidad Agente - Versión KISS
+ * SIMPLIFICADO: Todos los getters/setters funcionan correctamente
+ */
 public class Agente {
 
-    private Long id;
+    private Long idAgente;
+    private String nombreCompleto;
     private String numeroEmpleado;
     private String telefonoContacto;
+    private String email;
     private String horarioTurno;
     private String nivelExperiencia;
 
-    // ===== CONSTRUCTORES =====
-
+    // Constructor vacío
     public Agente() {
     }
 
-    public Agente(Long id, String numeroEmpleado, String telefonoContacto,
-                  String horarioTurno, String nivelExperiencia) {
-        this.id = id;
+    // Constructor completo
+    public Agente(Long idAgente, String nombreCompleto, String numeroEmpleado, 
+                  String telefonoContacto, String email, String horarioTurno, 
+                  String nivelExperiencia) {
+        this.idAgente = idAgente;
+        this.nombreCompleto = nombreCompleto;
         this.numeroEmpleado = numeroEmpleado;
         this.telefonoContacto = telefonoContacto;
+        this.email = email;
         this.horarioTurno = horarioTurno;
         this.nivelExperiencia = nivelExperiencia;
     }
 
-    // ===== GETTERS Y SETTERS BASE =====
-
-    public Long getId() {
-        return id;
+    // ===== GETTERS Y SETTERS PRINCIPALES =====
+    
+    public Long getIdAgente() {
+        return idAgente;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdAgente(Long idAgente) {
+        this.idAgente = idAgente;
+    }
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
     }
 
     public String getNumeroEmpleado() {
@@ -48,6 +65,14 @@ public class Agente {
         this.telefonoContacto = telefonoContacto;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getHorarioTurno() {
         return horarioTurno;
     }
@@ -64,9 +89,9 @@ public class Agente {
         this.nivelExperiencia = nivelExperiencia;
     }
 
-    // ===== MÉTODOS COMPATIBLES (ALIAS) =====
-    // Estos existen SOLO para que el resto del proyecto compile
-
+    // ===== ALIAS PARA COMPATIBILIDAD =====
+    // Estos métodos delegan a los principales para mantener compatibilidad
+    
     public String getCodigoEmpleado() {
         return numeroEmpleado;
     }
@@ -99,27 +124,12 @@ public class Agente {
         this.nivelExperiencia = experiencia;
     }
 
-    public void setIdAgente(long aLong) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setEmail(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setNombreCompleto(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public String getEmail() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public String getNombreCompleto() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public long getIdAgente() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    @Override
+    public String toString() {
+        return "Agente{" +
+                "idAgente=" + idAgente +
+                ", nombreCompleto='" + nombreCompleto + '\'' +
+                ", numeroEmpleado='" + numeroEmpleado + '\'' +
+                '}';
     }
 }

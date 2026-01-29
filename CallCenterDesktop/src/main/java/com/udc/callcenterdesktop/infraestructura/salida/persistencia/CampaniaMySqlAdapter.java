@@ -9,18 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador MySQL para Campaña - Versión KISS
+ * SIMPLIFICADO: Implementación completa y funcional
+ */
 public class CampaniaMySqlAdapter implements ICampaniaRepository {
 
     private static final String INSERT =
-            "INSERT INTO campanias (nombre_campania, tipo_campania, fecha_inicio, fecha_fin, supervisores_cargo, descripcion_objetivos) " +
-            "VALUES (?, ?, ?, ?, ?, ?)";
+            "INSERT INTO campanias (nombre_campania, tipo_campania, fecha_inicio, fecha_fin, " +
+            "supervisores_cargo, descripcion_objetivos) VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String SELECT_ALL =
             "SELECT * FROM campanias ORDER BY fecha_inicio DESC";
 
+    private static final String SELECT_BY_ID =
+            "SELECT * FROM campanias WHERE id_campania = ?";
+
     private static final String UPDATE =
-            "UPDATE campanias SET nombre_campania=?, tipo_campania=?, fecha_inicio=?, fecha_fin=?, supervisores_cargo=?, descripcion_objetivos=? " +
-            "WHERE id_campania=?";
+            "UPDATE campanias SET nombre_campania=?, tipo_campania=?, fecha_inicio=?, " +
+            "fecha_fin=?, supervisores_cargo=?, descripcion_objetivos=? WHERE id_campania=?";
 
     private static final String DELETE =
             "DELETE FROM campanias WHERE id_campania=?";
@@ -30,7 +37,13 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement st = conn.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
 
-            mapPreparedStatement(st, c);
+            st.setString(1, c.getNombreCampania());
+            st.setString(2, c.getTipoCampania());
+            st.setDate(3, c.getFechaInicio() != null ? Date.valueOf(c.getFechaInicio()) : null);
+            st.setDate(4, c.getFechaFin() != null ? Date.valueOf(c.getFechaFin()) : null);
+            st.setString(5, c.getSupervisoresCargo());
+            st.setString(6, c.getDescripcionObjetivos());
+
             st.executeUpdate();
 
             try (ResultSet rs = st.getGeneratedKeys()) {
@@ -40,7 +53,7 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
             }
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al guardar campaña");
+            throw new CallCenterException("Error al guardar campaña: " + e.getMessage());
         }
     }
 
@@ -53,27 +66,34 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
              ResultSet rs = st.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(mapResultSet(rs));
+                lista.add(mapearResultSet(rs));
             }
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al listar campañas");
+            throw new CallCenterException("Error al listar campañas: " + e.getMessage());
         }
 
         return lista;
     }
 
-    public void actualizar(Campania c) {
+    @Override
+    public Optional<Campania> buscarPorId(Long id) {
         try (Connection conn = ConexionDB.obtenerConexion();
-             PreparedStatement st = conn.prepareStatement(UPDATE)) {
+             PreparedStatement st = conn.prepareStatement(SELECT_BY_ID)) {
 
-            mapPreparedStatement(st, c);
-            st.setLong(7, c.getIdCampania());
-            st.executeUpdate();
+            st.setLong(1, id);
+
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapearResultSet(rs));
+                }
+            }
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al actualizar campaña");
+            throw new CallCenterException("Error al buscar campaña: " + e.getMessage());
         }
+
+        return Optional.empty();
     }
 
     @Override
@@ -85,44 +105,26 @@ public class CampaniaMySqlAdapter implements ICampaniaRepository {
             st.executeUpdate();
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al eliminar campaña");
+            throw new CallCenterException("Error al eliminar campaña: " + e.getMessage());
         }
     }
 
-    private void mapPreparedStatement(PreparedStatement st, Campania c) throws SQLException {
-        st.setString(1, c.getNombreCampania());
-        st.setString(2, c.getTipoCampania());
-        st.setDate(3, c.getFechaInicio() != null ? Date.valueOf(c.getFechaInicio()) : null);
-        st.setDate(4, c.getFechaFin() != null ? Date.valueOf(c.getFechaFin()) : null);
-        st.setString(5, c.getSupervisoresCargo());
-        st.setString(6, c.getDescripcionObjetivos());
-    }
+    // Método auxiliar para convertir ResultSet -> Entidad
+    private Campania mapearResultSet(ResultSet rs) throws SQLException {
+        Campania c = new Campania();
+        c.setIdCampania(rs.getLong("id_campania"));
+        c.setNombreCampania(rs.getString("nombre_campania"));
+        c.setTipoCampania(rs.getString("tipo_campania"));
 
-   private Campania mapResultSet(ResultSet rs) throws SQLException {
-    // CORRECCIÓN: Usamos el constructor vacío. 
-    // No necesitamos 'dto' porque los datos vienen del 'rs' (ResultSet)
-    Campania c = new Campania(); 
-    
-    // Aquí llenamos el objeto con los datos de la BD
-    c.setIdCampania(rs.getLong("id_campania"));
-    c.setNombreCampania(rs.getString("nombre_campania"));
-    // Asegúrate que el nombre de la columna en BD sea correcto (ej: "descripcion" o "tipo_campania")
-    c.setTipoCampania(rs.getString("tipo_campania")); 
+        Date fi = rs.getDate("fecha_inicio");
+        if (fi != null) c.setFechaInicio(fi.toLocalDate());
 
-    Date fi = rs.getDate("fecha_inicio");
-    if (fi != null) c.setFechaInicio(fi.toLocalDate());
+        Date ff = rs.getDate("fecha_fin");
+        if (ff != null) c.setFechaFin(ff.toLocalDate());
 
-    Date ff = rs.getDate("fecha_fin");
-    if (ff != null) c.setFechaFin(ff.toLocalDate());
+        c.setSupervisoresCargo(rs.getString("supervisores_cargo"));
+        c.setDescripcionObjetivos(rs.getString("descripcion_objetivos"));
 
-    c.setSupervisoresCargo(rs.getString("supervisores_cargo"));
-    c.setDescripcionObjetivos(rs.getString("descripcion_objetivos"));
-    
-    return c;
-}
-
-    @Override
-    public Optional<Campania> buscarPorId(Long id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return c;
     }
 }
