@@ -10,15 +10,18 @@ import java.util.Optional;
 
 public class AgenteMySqlAdapter implements IAgenteRepository {
 
+    // CORRECCIÓN: Usamos los nombres EXACTOS de las columnas en la BD
     private static final String INSERT =
             "INSERT INTO agentes (nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String SELECT_ALL =
-            "SELECT * FROM agentes ORDER BY nombre_completo";
+            "SELECT id_agente, nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia " +
+            "FROM agentes ORDER BY nombre_completo";
 
     private static final String SELECT_BY_ID =
-            "SELECT * FROM agentes WHERE id_agente = ?";
+            "SELECT id_agente, nombre_completo, numero_empleado, telefono_contacto, email, horario_turno, nivel_experiencia " +
+            "FROM agentes WHERE id_agente = ?";
 
     private static final String UPDATE =
             "UPDATE agentes SET nombre_completo=?, numero_empleado=?, telefono_contacto=?, email=?, horario_turno=?, nivel_experiencia=? " +
@@ -32,7 +35,13 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement st = conn.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
 
-            mapPreparedStatement(st, a);
+            st.setString(1, a.getNombreCompleto());
+            st.setString(2, a.getCodigoEmpleado());  // Mapea a numero_empleado
+            st.setString(3, a.getTelefono());         // Mapea a telefono_contacto
+            st.setString(4, a.getEmail());
+            st.setString(5, a.getTurno());            // Mapea a horario_turno
+            st.setString(6, a.getExperiencia());      // Mapea a nivel_experiencia
+
             st.executeUpdate();
 
             try (ResultSet rs = st.getGeneratedKeys()) {
@@ -42,6 +51,7 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             }
 
         } catch (SQLException e) {
+            System.err.println("❌ Error SQL al guardar agente: " + e.getMessage());
             throw new CallCenterException("Error al guardar agente: " + e.getMessage());
         }
     }
@@ -59,18 +69,14 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             }
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al listar agentes");
+            System.err.println("❌ Error SQL al listar agentes: " + e.getMessage());
+            throw new CallCenterException("Error al listar agentes: " + e.getMessage());
         }
 
         return lista;
     }
 
-    /**
-     *
-     * @param id
-     * @return
-     */
-
+    @Override
     public Optional<Agente> buscarPorId(Long id) {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement st = conn.prepareStatement(SELECT_BY_ID)) {
@@ -83,7 +89,8 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             }
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al buscar agente");
+            System.err.println("❌ Error SQL al buscar agente: " + e.getMessage());
+            throw new CallCenterException("Error al buscar agente: " + e.getMessage());
         }
 
         return Optional.empty();
@@ -94,12 +101,19 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement st = conn.prepareStatement(UPDATE)) {
 
-            mapPreparedStatement(st, a);
+            st.setString(1, a.getNombreCompleto());
+            st.setString(2, a.getCodigoEmpleado());
+            st.setString(3, a.getTelefono());
+            st.setString(4, a.getEmail());
+            st.setString(5, a.getTurno());
+            st.setString(6, a.getExperiencia());
             st.setLong(7, a.getIdAgente());
+
             st.executeUpdate();
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al actualizar agente");
+            System.err.println("❌ Error SQL al actualizar agente: " + e.getMessage());
+            throw new CallCenterException("Error al actualizar agente: " + e.getMessage());
         }
     }
 
@@ -112,19 +126,12 @@ public class AgenteMySqlAdapter implements IAgenteRepository {
             st.executeUpdate();
 
         } catch (SQLException e) {
-            throw new CallCenterException("Error al eliminar agente");
+            System.err.println("❌ Error SQL al eliminar agente: " + e.getMessage());
+            throw new CallCenterException("Error al eliminar agente: " + e.getMessage());
         }
     }
 
-    private void mapPreparedStatement(PreparedStatement st, Agente a) throws SQLException {
-        st.setString(1, a.getNombreCompleto());
-        st.setString(2, a.getCodigoEmpleado());
-        st.setString(3, a.getTelefono());
-        st.setString(4, a.getEmail());
-        st.setString(5, a.getTurno());
-        st.setString(6, a.getExperiencia());
-    }
-
+    // Método auxiliar para mapear ResultSet a Agente
     private Agente mapResultSet(ResultSet rs) throws SQLException {
         Agente a = new Agente();
         a.setIdAgente(rs.getLong("id_agente"));

@@ -16,40 +16,40 @@ public class AgenteService implements IAgenteService {
         this.repositorio = repositorio;
     }
 
-    public void guardar(AgenteDTO dto) {
-        Agente agente = AgenteMapper.toEntity(dto);
-        if (dto.getIdAgente() != null) { // Corregido de getId() a getIdAgente()
-            repositorio.actualizar(agente);
-        } else {
-            repositorio.guardar(agente);
-        }
-    }
-
-    public List<AgenteDTO> listarTodos() {
-        return repositorio.listarTodos().stream()
-                .map(AgenteMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    // Implementa eliminar y buscar si tu interfaz lo requiere
-
     @Override
     public void registrarAgente(AgenteDTO dto) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Agente agente = AgenteMapper.toEntity(dto);
+        repositorio.guardar(agente);
     }
 
     @Override
     public List<AgenteDTO> listarAgentes() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return repositorio.listarTodos().stream()
+                .map(AgenteMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void actualizarAgente(AgenteDTO dto) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Agente agente = AgenteMapper.toEntity(dto);
+        repositorio.actualizar(agente);
     }
 
     @Override
     public void eliminarAgente(Long id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        repositorio.eliminar(id);
+    }
+
+    // Método adicional para compatibilidad
+    public void guardar(AgenteDTO dto) {
+        if (dto.getIdAgente() != null) {
+            actualizarAgente(dto);
+        } else {
+            registrarAgente(dto);
+        }
+    }
+
+    public List<AgenteDTO> listarTodos() {
+        return listarAgentes();
     }
 }
